@@ -25,9 +25,13 @@ void main() {
     expect(categories.every((c) => c.uuid.isNotEmpty), isTrue);
   });
 
-  test('catalog starts empty — suggestions are learned, not shipped',
+  test('catalog ships the starter set so first-run autocomplete works',
       () async {
-    expect(await db.select(db.catalogEntries).get(), isEmpty);
+    // Locked by ticket #4 (overrides the M0 empty-catalog placeholder);
+    // the starter set itself is covered in seed_catalog_test.dart.
+    final rows = await db.select(db.catalogEntries).get();
+    expect(rows, isNotEmpty);
+    expect(rows.every((r) => r.isSeeded), isTrue);
   });
 
   test('units list offers pcs first', () {
@@ -87,17 +91,18 @@ void main() {
   });
 
   test('catalog nameNormalized is unique', () async {
+    // 'saffron' is deliberately not in the starter catalog.
     await db.into(db.catalogEntries).insert(
           CatalogEntriesCompanion.insert(
-            nameNormalized: 'milk',
-            displayName: 'Milk',
+            nameNormalized: 'saffron',
+            displayName: 'Saffron',
           ),
         );
     expect(
       () => db.into(db.catalogEntries).insert(
             CatalogEntriesCompanion.insert(
-              nameNormalized: 'milk',
-              displayName: 'MILK',
+              nameNormalized: 'saffron',
+              displayName: 'SAFFRON',
             ),
           ),
       throwsA(anything),

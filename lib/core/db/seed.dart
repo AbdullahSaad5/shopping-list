@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:tokri/core/db/database.dart';
+import 'package:tokri/core/db/seed_catalog.dart';
+import 'package:tokri/core/utils/item_parser.dart';
 
 /// Units offered in the quantity picker. 'pcs' is the default everywhere.
 const kUnits = <String>[
@@ -39,9 +41,10 @@ const _categories = <_SeedCategory>[
   _SeedCategory('Other', 'shopping-basket', 0xFF9E9E9E),
 ];
 
-/// Inserts the default categories. Called once from the database's onCreate.
-/// The learned catalog starts empty on purpose: suggestions come from what
-/// the user actually buys (ticket #4 may add a starter catalog later).
+/// Inserts the default categories and the starter catalog (ticket #4).
+/// Starter rows ship with zero purchase counters so anything the user
+/// actually buys outranks them once ranking uses counters. Called once
+/// from the database's onCreate.
 Future<void> seedDefaults(AppDatabase db) async {
   await db.batch((batch) {
     var position = 0;
@@ -54,6 +57,24 @@ Future<void> seedDefaults(AppDatabase db) async {
           color: c.color,
           position: position++,
           isDefault: const Value(true),
+        ),
+      );
+    }
+  });
+
+  final categoryIds = {
+    for (final c in await db.select(db.categories).get()) c.name: c.id,
+  };
+  await db.batch((batch) {
+    for (final entry in kSeedCatalog) {
+      batch.insert(
+        db.catalogEntries,
+        CatalogEntriesCompanion.insert(
+          nameNormalized: normalizeItemName(entry.name),
+          displayName: entry.name,
+          defaultUnit: Value(entry.unit),
+          categoryId: Value(categoryIds[entry.category]),
+          isSeeded: const Value(true),
         ),
       );
     }

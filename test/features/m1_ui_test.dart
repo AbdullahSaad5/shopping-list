@@ -168,9 +168,12 @@ void main() {
       // Suggestion lookup debounces 120ms.
       await tester.pump(const Duration(milliseconds: 250));
       await tester.pumpAndSettle();
-      expect(find.byType(ActionChip), findsOneWidget);
+      // Starter catalog matches 'bro' too (Brown sugar), so target the
+      // learned entry's chip by label.
+      final chip = find.widgetWithText(ActionChip, 'Brown Bread');
+      expect(chip, findsOneWidget);
 
-      await tester.tap(find.byType(ActionChip));
+      await tester.tap(chip);
       await tester.pumpAndSettle();
       // Dedupe-on-add bumped the existing open item instead of duplicating.
       final rows = await real(

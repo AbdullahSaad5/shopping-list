@@ -66,9 +66,11 @@ void main() {
       listId,
       const ParsedItem(name: 'Brown Bread'),
     );
+    // The starter catalog also matches 'bro' (Brown sugar), so assert on
+    // the learned entry rather than a single hit.
     final hits = await repo.suggest('bro');
-    expect(hits.single.displayName, 'Brown Bread');
-    expect(hits.single.defaultUnit, 'pcs');
+    final bread = hits.singleWhere((h) => h.displayName == 'Brown Bread');
+    expect(bread.defaultUnit, 'pcs');
     expect(await repo.suggest('zz'), isEmpty);
     expect(await repo.suggest('  '), isEmpty);
   });
@@ -190,8 +192,14 @@ void main() {
           .open
           .single;
       expect(item.categoryId, isNull);
+      // The starter catalog fills this table, so assert nothing still
+      // references the deleted category (seeded rows detach too).
       final catalog = await db.select(db.catalogEntries).get();
-      expect(catalog.single.categoryId, isNull);
+      expect(
+        catalog.singleWhere((c) => c.nameNormalized == 'apples').categoryId,
+        isNull,
+      );
+      expect(catalog.map((c) => c.categoryId), isNot(contains(target.id)));
     });
 
     test('create appends after seeds; reorder rewrites aisle order',

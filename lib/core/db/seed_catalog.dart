@@ -1,0 +1,208 @@
+import 'package:tokri/core/db/seed.dart' show kUnits;
+
+/// Units as a set, for membership checks (picker order lives in [kUnits]).
+final Set<String> kUnitsSet = Set.unmodifiable(kUnits);
+
+/// One starter-catalog entry: display name, default unit, and the seeded
+/// category it belongs to (matched by name at seed time).
+typedef SeedCatalogEntry = ({String name, String unit, String category});
+
+/// Starter catalog (ticket #4, PLAN §3 "~150 common grocery items").
+/// Ships marked `isSeeded` with zero purchase counters, so learned entries
+/// outrank these as soon as ranking uses counters (M2/M3); until then they
+/// make first-run autocomplete and auto-categorization work. Names lean
+/// Pakistani-grocery (Tokri's home market) with common English staples.
+/// Localized name swaps are a later l10n pass (PLAN §7).
+const List<SeedCatalogEntry> kSeedCatalog = [
+  // Fruits & Vegetables
+  (name: 'Apples', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Bananas', unit: 'dozen', category: 'Fruits & Vegetables'),
+  (name: 'Oranges', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Mangoes', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Grapes', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Pomegranate', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Dates', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Lemons', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Tomatoes', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Onions', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Potatoes', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Garlic', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Ginger', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Green chillies', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Coriander', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Mint', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Spinach', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Okra', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Cauliflower', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Cabbage', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Carrots', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Peas', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Cucumber', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Capsicum', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Brinjal', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Bitter gourd', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Pumpkin', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Radish', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Turnip', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Beetroot', unit: 'kg', category: 'Fruits & Vegetables'),
+
+  // Bakery
+  (name: 'Bread', unit: 'pcs', category: 'Bakery'),
+  (name: 'Buns', unit: 'pack', category: 'Bakery'),
+  (name: 'Rusk', unit: 'pack', category: 'Bakery'),
+  (name: 'Naan', unit: 'pcs', category: 'Bakery'),
+  (name: 'Sheermal', unit: 'pcs', category: 'Bakery'),
+  (name: 'Cake', unit: 'pcs', category: 'Bakery'),
+  (name: 'Pizza base', unit: 'pack', category: 'Bakery'),
+
+  // Dairy & Eggs
+  (name: 'Milk', unit: 'L', category: 'Dairy & Eggs'),
+  (name: 'Eggs', unit: 'dozen', category: 'Dairy & Eggs'),
+  (name: 'Yogurt', unit: 'kg', category: 'Dairy & Eggs'),
+  (name: 'Butter', unit: 'pcs', category: 'Dairy & Eggs'),
+  (name: 'Cheese', unit: 'pack', category: 'Dairy & Eggs'),
+  (name: 'Cheese slices', unit: 'pack', category: 'Dairy & Eggs'),
+  (name: 'Cream', unit: 'pack', category: 'Dairy & Eggs'),
+  (name: 'Desi ghee', unit: 'kg', category: 'Dairy & Eggs'),
+  (name: 'Milk powder', unit: 'pack', category: 'Dairy & Eggs'),
+  (name: 'Condensed milk', unit: 'pcs', category: 'Dairy & Eggs'),
+  (name: 'Lassi', unit: 'L', category: 'Dairy & Eggs'),
+
+  // Meat & Fish
+  (name: 'Chicken', unit: 'kg', category: 'Meat & Fish'),
+  (name: 'Chicken boneless', unit: 'kg', category: 'Meat & Fish'),
+  (name: 'Beef', unit: 'kg', category: 'Meat & Fish'),
+  (name: 'Mutton', unit: 'kg', category: 'Meat & Fish'),
+  (name: 'Qeema', unit: 'kg', category: 'Meat & Fish'),
+  (name: 'Fish', unit: 'kg', category: 'Meat & Fish'),
+  (name: 'Prawns', unit: 'kg', category: 'Meat & Fish'),
+
+  // Rice, Flour & Grains
+  (name: 'Basmati rice', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Atta', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Maida', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Besan', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Daal chana', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Daal masoor', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Daal moong', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Daal mash', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'White chickpeas', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Red beans', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Sooji', unit: 'kg', category: 'Rice, Flour & Grains'),
+  (name: 'Vermicelli', unit: 'pack', category: 'Rice, Flour & Grains'),
+  (name: 'Oats', unit: 'pack', category: 'Rice, Flour & Grains'),
+  (name: 'Cornflour', unit: 'pack', category: 'Rice, Flour & Grains'),
+  (name: 'Pasta', unit: 'pack', category: 'Rice, Flour & Grains'),
+  (name: 'Macaroni', unit: 'pack', category: 'Rice, Flour & Grains'),
+  (name: 'Noodles', unit: 'pack', category: 'Rice, Flour & Grains'),
+
+  // Spices & Condiments
+  (name: 'Salt', unit: 'kg', category: 'Spices & Condiments'),
+  (name: 'Sugar', unit: 'kg', category: 'Spices & Condiments'),
+  (name: 'Brown sugar', unit: 'kg', category: 'Spices & Condiments'),
+  (name: 'Red chilli powder', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Turmeric powder', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Coriander powder', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Cumin', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Garam masala', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Black pepper', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Cardamom', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Cinnamon', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Cloves', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Bay leaves', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Chaat masala', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Cooking oil', unit: 'L', category: 'Spices & Condiments'),
+  (name: 'Olive oil', unit: 'L', category: 'Spices & Condiments'),
+  (name: 'Vinegar', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Soy sauce', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Ketchup', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Mayonnaise', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Achar', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Jam', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Honey', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Tamarind', unit: 'pack', category: 'Spices & Condiments'),
+
+  // Snacks & Biscuits
+  (name: 'Biscuits', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Cookies', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Chips', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Nimko', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Chocolate', unit: 'pcs', category: 'Snacks & Biscuits'),
+  (name: 'Popcorn', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Cake rusk', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Peanuts', unit: 'kg', category: 'Snacks & Biscuits'),
+  (name: 'Almonds', unit: 'kg', category: 'Snacks & Biscuits'),
+  (name: 'Cashews', unit: 'kg', category: 'Snacks & Biscuits'),
+  (name: 'Raisins', unit: 'pack', category: 'Snacks & Biscuits'),
+
+  // Beverages
+  (name: 'Tea', unit: 'pack', category: 'Beverages'),
+  (name: 'Green tea', unit: 'pack', category: 'Beverages'),
+  (name: 'Coffee', unit: 'pcs', category: 'Beverages'),
+  (name: 'Juice', unit: 'L', category: 'Beverages'),
+  (name: 'Soft drink', unit: 'L', category: 'Beverages'),
+  (name: 'Squash', unit: 'pcs', category: 'Beverages'),
+  (name: 'Mineral water', unit: 'L', category: 'Beverages'),
+  (name: 'Rooh Afza', unit: 'pcs', category: 'Beverages'),
+
+  // Frozen
+  (name: 'Frozen paratha', unit: 'pack', category: 'Frozen'),
+  (name: 'Frozen samosa', unit: 'pack', category: 'Frozen'),
+  (name: 'Frozen kebab', unit: 'pack', category: 'Frozen'),
+  (name: 'Chicken nuggets', unit: 'pack', category: 'Frozen'),
+  (name: 'French fries', unit: 'pack', category: 'Frozen'),
+  (name: 'Ice cream', unit: 'pcs', category: 'Frozen'),
+  (name: 'Frozen peas', unit: 'pack', category: 'Frozen'),
+
+  // Household & Cleaning
+  (name: 'Dishwashing liquid', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Laundry detergent', unit: 'kg', category: 'Household & Cleaning'),
+  (name: 'Soap bars', unit: 'pack', category: 'Household & Cleaning'),
+  (name: 'Bleach', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Floor cleaner', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Toilet cleaner', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Glass cleaner', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Garbage bags', unit: 'pack', category: 'Household & Cleaning'),
+  (name: 'Sponges', unit: 'pack', category: 'Household & Cleaning'),
+  (name: 'Matchbox', unit: 'pack', category: 'Household & Cleaning'),
+  (name: 'Tissues', unit: 'pack', category: 'Household & Cleaning'),
+  (name: 'Paper towels', unit: 'pack', category: 'Household & Cleaning'),
+  (name: 'Aluminium foil', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Cling film', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Mosquito repellent', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Air freshener', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Batteries', unit: 'pack', category: 'Household & Cleaning'),
+  (name: 'Light bulb', unit: 'pcs', category: 'Household & Cleaning'),
+
+  // Personal Care
+  (name: 'Shampoo', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Conditioner', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Toothpaste', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Toothbrush', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Face wash', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Body lotion', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Deodorant', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Sanitary pads', unit: 'pack', category: 'Personal Care'),
+  (name: 'Razor', unit: 'pack', category: 'Personal Care'),
+  (name: 'Shaving cream', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Hair oil', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Cotton buds', unit: 'pack', category: 'Personal Care'),
+  (name: 'Sunscreen', unit: 'pcs', category: 'Personal Care'),
+
+  // Baby
+  (name: 'Diapers', unit: 'pack', category: 'Baby'),
+  (name: 'Baby wipes', unit: 'pack', category: 'Baby'),
+  (name: 'Baby formula', unit: 'pcs', category: 'Baby'),
+  (name: 'Baby lotion', unit: 'pcs', category: 'Baby'),
+  (name: 'Baby shampoo', unit: 'pcs', category: 'Baby'),
+  (name: 'Baby food', unit: 'pcs', category: 'Baby'),
+
+  // Pharmacy
+  (name: 'Paracetamol', unit: 'pack', category: 'Pharmacy'),
+  (name: 'Bandages', unit: 'pack', category: 'Pharmacy'),
+  (name: 'Antiseptic liquid', unit: 'pcs', category: 'Pharmacy'),
+  (name: 'Hand sanitizer', unit: 'pcs', category: 'Pharmacy'),
+  (name: 'Cotton', unit: 'pack', category: 'Pharmacy'),
+  (name: 'Vitamins', unit: 'pcs', category: 'Pharmacy'),
+  (name: 'ORS', unit: 'pack', category: 'Pharmacy'),
+];
