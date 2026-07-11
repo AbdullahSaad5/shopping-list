@@ -126,6 +126,12 @@ ThemeData tokriTheme(Brightness brightness) {
   return base.copyWith(
     scaffoldBackgroundColor: scheme.surface,
     splashFactory: InkSparkle.splashFactory,
+    // M5 polish: fade-forwards route transitions app-wide + predictive back.
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+      },
+    ),
     appBarTheme: AppBarTheme(
       elevation: 0,
       scrolledUnderElevation: 0,

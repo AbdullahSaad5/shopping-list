@@ -78,18 +78,25 @@ class ItemTile extends ConsumerWidget {
                           const SizedBox(width: Gaps.xs),
                         ],
                         Flexible(
-                          child: Text(
-                            item.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.bodyLarge?.copyWith(
+                          // Check-off animates (PLAN §3 polish): color fades
+                          // as the strike lands, then the item slides to the
+                          // done section via the stream rebuild.
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOut,
+                            style: text.bodyLarge!.copyWith(
                               decoration: item.checked
                                   ? TextDecoration.lineThrough
-                                  : null,
+                                  : TextDecoration.none,
                               color: item.checked
                                   ? scheme.onSurfaceVariant
                                   : scheme.onSurface,
                               fontWeight: FontWeight.w600,
+                            ),
+                            child: Text(
+                              item.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
