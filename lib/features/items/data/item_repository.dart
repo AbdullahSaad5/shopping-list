@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/providers/database_provider.dart';
 import 'package:tokri/core/utils/item_parser.dart';
+import 'package:tokri/core/utils/urdu_aliases.dart';
 
 /// Items within a list, split into open and done for the two sections.
 class ListItems {
@@ -120,7 +121,20 @@ class ItemRepository {
             (c) => c.nameNormalized.equals(normalized) & c.deletedAt.isNull(),
           ))
         .getSingleOrNull();
-    return entry?.categoryId;
+    if (entry?.categoryId != null) return entry!.categoryId;
+
+    // Roman-Urdu fallback: "anday" categorizes like "eggs". First canonical
+    // with a category wins (gosht → beef's aisle).
+    for (final canonical in canonicalsFor(normalized)) {
+      final aliased = await (_db.select(_db.catalogEntries)
+            ..where(
+              (c) =>
+                  c.nameNormalized.equals(canonical) & c.deletedAt.isNull(),
+            ))
+          .getSingleOrNull();
+      if (aliased?.categoryId != null) return aliased!.categoryId;
+    }
+    return null;
   }
 
   /// Upserts the catalog entry for an added item: display name and default
@@ -162,9 +176,12 @@ class ItemRepository {
 
   /// Autocomplete over the catalog (M2 ranking): prefix matches first, then
   /// substring matches; within each tier most-purchased then most recent.
-  Future<List<CatalogEntry>> suggest(String prefix, {int limit = 8}) {
-    final normalized = _escapeLike(normalizeItemName(prefix));
-    if (normalized.isEmpty) return Future.value(const []);
+  /// Roman-Urdu words ("doodh", "sawaiyan") resolve through the alias table
+  /// so their canonical entries surface too.
+  Future<List<CatalogEntry>> suggest(String prefix, {int limit = 8}) async {
+    final raw = normalizeItemName(prefix);
+    if (raw.isEmpty) return const [];
+    final normalized = _escapeLike(raw);
     final query = _db.select(_db.catalogEntries)
       ..where(
         (c) =>
@@ -186,7 +203,24 @@ class ItemRepository {
         (c) => OrderingTerm(expression: c.nameNormalized),
       ])
       ..limit(limit);
-    return query.get();
+    final direct = await query.get();
+
+    final canonicals = {
+      ...canonicalsFor(raw),
+      ...aliasCanonicalsForPrefix(raw),
+    };
+    if (canonicals.isEmpty) return direct;
+    final aliasRows = await (_db.select(_db.catalogEntries)
+          ..where(
+            (c) => c.deletedAt.isNull() & c.nameNormalized.isIn(canonicals),
+          ))
+        .get();
+    // Alias hits lead (that's what the user meant), then direct matches.
+    final seen = aliasRows.map((r) => r.id).toSet();
+    return [
+      ...aliasRows,
+      ...direct.where((r) => !seen.contains(r.id)),
+    ].take(limit).toList();
   }
 
   /// Idle chips for an empty, focused quick-add bar (M2): the most frequent

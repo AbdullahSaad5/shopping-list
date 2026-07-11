@@ -52,6 +52,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Rusk', unit: 'pack', category: 'Bakery'),
   (name: 'Naan', unit: 'pcs', category: 'Bakery'),
   (name: 'Sheermal', unit: 'pcs', category: 'Bakery'),
+  (name: 'Roti', unit: 'pcs', category: 'Bakery'),
   (name: 'Cake', unit: 'pcs', category: 'Bakery'),
   (name: 'Pizza base', unit: 'pack', category: 'Bakery'),
 
@@ -67,6 +68,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Milk powder', unit: 'pack', category: 'Dairy & Eggs'),
   (name: 'Condensed milk', unit: 'pcs', category: 'Dairy & Eggs'),
   (name: 'Lassi', unit: 'L', category: 'Dairy & Eggs'),
+  (name: 'Paneer', unit: 'kg', category: 'Dairy & Eggs'),
 
   // Meat & Fish
   (name: 'Chicken', unit: 'kg', category: 'Meat & Fish'),
@@ -95,6 +97,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Pasta', unit: 'pack', category: 'Rice, Flour & Grains'),
   (name: 'Macaroni', unit: 'pack', category: 'Rice, Flour & Grains'),
   (name: 'Noodles', unit: 'pack', category: 'Rice, Flour & Grains'),
+  (name: 'Dalia', unit: 'pack', category: 'Rice, Flour & Grains'),
 
   // Spices & Condiments
   (name: 'Salt', unit: 'kg', category: 'Spices & Condiments'),
@@ -121,6 +124,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Jam', unit: 'pcs', category: 'Spices & Condiments'),
   (name: 'Honey', unit: 'pcs', category: 'Spices & Condiments'),
   (name: 'Tamarind', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Gur', unit: 'kg', category: 'Spices & Condiments'),
 
   // Snacks & Biscuits
   (name: 'Biscuits', unit: 'pack', category: 'Snacks & Biscuits'),

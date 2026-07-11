@@ -48,18 +48,20 @@ void main() {
     });
 
     test('within a match tier: frequency desc, then recency desc', () async {
-      await insertCatalog('Anday desi', timesPurchased: 2);
-      await insertCatalog('Anday farmi', timesPurchased: 9);
+      // 'zorba' is deliberately absent from both the seed catalog and the
+      // Roman-Urdu alias table ('anday' would alias-hit Eggs).
+      await insertCatalog('Zorba desi', timesPurchased: 2);
+      await insertCatalog('Zorba farmi', timesPurchased: 9);
       await insertCatalog(
-        'Anday duck',
+        'Zorba duck',
         timesPurchased: 2,
         lastPurchasedAt: DateTime(2026, 7, 1),
       );
 
-      final hits = await repo.suggest('anday');
+      final hits = await repo.suggest('zorba');
       expect(
         hits.map((h) => h.displayName).toList(),
-        ['Anday farmi', 'Anday duck', 'Anday desi'],
+        ['Zorba farmi', 'Zorba duck', 'Zorba desi'],
       );
     });
 
