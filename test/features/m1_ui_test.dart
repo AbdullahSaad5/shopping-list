@@ -261,8 +261,16 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).at(1), '2');
-      await tester.tap(find.text('L'));
-      await tester.enterText(find.byType(TextField).at(2), '450');
+      // Unit lives in a dropdown now.
+      await tester.tap(find.byType(DropdownMenu<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('L').last);
+      await tester.pumpAndSettle();
+      // DropdownMenu embeds its own TextField, so price is index 3 now.
+      await tester.enterText(find.byType(TextField).at(3), '450');
+      // The richer sheet scrolls; bring Save into view first.
+      await tester.ensureVisible(find.text('Save'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 

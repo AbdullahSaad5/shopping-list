@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/providers/database_provider.dart';
+import 'package:tokri/core/utils/fuzzy_match.dart';
 import 'package:tokri/core/utils/item_parser.dart';
 import 'package:tokri/core/utils/urdu_aliases.dart';
 
@@ -209,18 +210,71 @@ class ItemRepository {
       ...canonicalsFor(raw),
       ...aliasCanonicalsForPrefix(raw),
     };
-    if (canonicals.isEmpty) return direct;
-    final aliasRows = await (_db.select(_db.catalogEntries)
-          ..where(
-            (c) => c.deletedAt.isNull() & c.nameNormalized.isIn(canonicals),
-          ))
-        .get();
+    final aliasRows = canonicals.isEmpty
+        ? const <CatalogEntry>[]
+        : await (_db.select(_db.catalogEntries)
+              ..where(
+                (c) =>
+                    c.deletedAt.isNull() & c.nameNormalized.isIn(canonicals),
+              ))
+            .get();
     // Alias hits lead (that's what the user meant), then direct matches.
     final seen = aliasRows.map((r) => r.id).toSet();
-    return [
+    final merged = [
       ...aliasRows,
       ...direct.where((r) => !seen.contains(r.id)),
-    ].take(limit).toList();
+    ];
+    if (merged.length >= limit) return merged.take(limit).toList();
+
+    // Fuzzy fill (bad typing welcome): leftover slots go to typo-distance
+    // matches against catalog names AND Roman-Urdu alias keys, so both
+    // "tomatos" and "sawaian" land. Never displaces exact/alias hits.
+    final fuzzy = await _fuzzyRows(raw, exclude: merged.map((r) => r.id));
+    return [...merged, ...fuzzy].take(limit).toList();
+  }
+
+  Future<List<CatalogEntry>> _fuzzyRows(
+    String query, {
+    required Iterable<int> exclude,
+  }) async {
+    if (query.length < 4) return const [];
+    final all = await (_db.select(_db.catalogEntries)
+          ..where((c) => c.deletedAt.isNull()))
+        .get();
+    final byNormalized = {for (final r in all) r.nameNormalized: r};
+    final excluded = exclude.toSet();
+
+    // candidate normalized name → best distance for ranking.
+    final scores = <String, int>{};
+    void consider(String candidate, String target) {
+      if (!fuzzyMatches(query, candidate)) return;
+      final distance = fuzzyDistance(query, candidate);
+      scores.update(
+        target,
+        (best) => distance < best ? distance : best,
+        ifAbsent: () => distance,
+      );
+    }
+
+    for (final row in all) {
+      consider(row.nameNormalized, row.nameNormalized);
+    }
+    for (final entry in kUrduAliases.entries) {
+      for (final canonical in entry.value) {
+        consider(entry.key, canonical);
+      }
+    }
+
+    final ranked = scores.entries
+        .map((e) => (row: byNormalized[e.key], distance: e.value))
+        .where((e) => e.row != null && !excluded.contains(e.row!.id))
+        .toList()
+      ..sort((a, b) {
+        final byDistance = a.distance.compareTo(b.distance);
+        if (byDistance != 0) return byDistance;
+        return b.row!.timesPurchased.compareTo(a.row!.timesPurchased);
+      });
+    return [for (final e in ranked) e.row!];
   }
 
   /// Idle chips for an empty, focused quick-add bar (M2): the most frequent

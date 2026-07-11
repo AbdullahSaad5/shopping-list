@@ -68,6 +68,54 @@ void main() {
     });
   });
 
+  group('fuzzy suggest (bad typing welcome)', () {
+    test('English typos still find the row', () async {
+      expect(
+        (await repo.suggest('tomatos')).map((e) => e.displayName),
+        contains('Tomatoes'),
+      );
+      expect(
+        (await repo.suggest('chesse')).map((e) => e.displayName),
+        contains('Cheese'),
+      );
+      expect(
+        (await repo.suggest('vermicelli'.replaceAll('ll', 'l')))
+            .map((e) => e.displayName),
+        contains('Vermicelli'),
+      );
+    });
+
+    test('Roman-Urdu typos resolve through the alias table', () async {
+      // 'sawaian' is not an alias key; fuzzy hits 'sawaiyan' → Vermicelli.
+      expect(
+        (await repo.suggest('sawaian')).map((e) => e.displayName),
+        contains('Vermicelli'),
+      );
+      expect(
+        (await repo.suggest('chenni')).map((e) => e.displayName),
+        contains('Sugar'),
+      );
+      expect(
+        (await repo.suggest('dhodh')).map((e) => e.displayName),
+        contains('Milk'),
+      );
+      expect(
+        (await repo.suggest('tamatr')).map((e) => e.displayName),
+        contains('Tomatoes'),
+      );
+    });
+
+    test('exact matches always outrank fuzzy fill', () async {
+      final names =
+          (await repo.suggest('milk')).map((e) => e.displayName).toList();
+      expect(names.first, 'Milk');
+    });
+
+    test('short garbage stays empty', () async {
+      expect(await repo.suggest('zx'), isEmpty);
+    });
+  });
+
   group('adding a Roman-Urdu item', () {
     test('keeps the typed name but categorizes via the alias', () async {
       await repo.add(listId, const ParsedItem(name: 'Anday'));
