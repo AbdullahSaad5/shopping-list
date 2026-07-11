@@ -65,6 +65,8 @@ dev_dependencies:
   drift_dev: ^2.20.0
   freezed: ^2.5.7
   json_serializable: ^6.9.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -123,3 +125,28 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Launcher icon — the Clay Tokri mark (issue #3): cream woven basket +
+# wheat grain on solid clay. Masters in docs/identity/*.svg (render with
+# headless Chrome; ImageMagick drops the stroke paths).
+# Regenerate with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#B8551F"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  adaptive_icon_monochrome: "assets/icon/icon_foreground.png"
+
+# Native splash: light = cream mark on clay field, dark = ember mark on
+# the espresso well. Regenerate with: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#B8551F"
+  color_dark: "#191210"
+  image: "assets/splash/splash_light.png"
+  image_dark: "assets/splash/splash_dark.png"
+  android_12:
+    color: "#B8551F"
+    color_dark: "#191210"
+    image: "assets/splash/splash_light.png"
+    image_dark: "assets/splash/splash_dark.png"

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="1024" height="1024">
+  <!-- Clay Tokri mark (#3): cream woven basket + wheat grain on clay field.
+       Kinship with ledgr's Mint Field: same solid-field + tonal-dot family. -->
+  <rect width="96" height="96" fill="#B8551F"/>
+  <path d="M31 40 a17 17 0 0 1 34 0" fill="none" stroke="#FBF7F1" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="48" cy="33" r="5" fill="#E3B04B"/>
+  <path d="M22 44 H74 L68.5 70 a9 9 0 0 1 -8.8 7 H36.3 a9 9 0 0 1 -8.8 -7 Z" fill="#FBF7F1" stroke="#FBF7F1" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M25.5 54 H70.5 M28 63 H68" fill="none" stroke="#B8551F" stroke-width="3" stroke-linecap="round"/>
+</svg>
