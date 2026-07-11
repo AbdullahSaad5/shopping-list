@@ -447,6 +447,35 @@ class ItemRepository {
         );
       });
 
+  /// Bulk tombstone for multi-select; undo with [restoreMany].
+  Future<void> deleteMany(List<int> ids) => ids.isEmpty
+      ? Future.value()
+      : (_db.update(_db.items)..where((i) => i.id.isIn(ids))).write(
+          ItemsCompanion(
+            deletedAt: Value(DateTime.now()),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+
+  /// Bulk move for multi-select: appended at the target's end, keeping
+  /// the dragged order.
+  Future<void> moveMany(List<int> ids, int targetListId) =>
+      _db.transaction(() async {
+        for (final id in ids) {
+          await moveToList(id, targetListId);
+        }
+      });
+
+  /// Bulk recategorize for multi-select.
+  Future<void> setCategoryMany(List<int> ids, int? categoryId) => ids.isEmpty
+      ? Future.value()
+      : (_db.update(_db.items)..where((i) => i.id.isIn(ids))).write(
+          ItemsCompanion(
+            categoryId: Value(categoryId),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+
   /// Removes a learned entry from autocomplete (tombstone). Adding the
   /// same name again revives it via _learn.
   Future<void> forgetSuggestion(int catalogEntryId) =>

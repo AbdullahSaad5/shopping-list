@@ -16,6 +16,10 @@ class ItemTile extends ConsumerWidget {
     required this.onTap,
     required this.onDelete,
     this.category,
+    this.onLongPress,
+    this.selectionMode = false,
+    this.selected = false,
+    this.dragIndex,
     super.key,
   });
 
@@ -24,6 +28,14 @@ class ItemTile extends ConsumerWidget {
   final ValueChanged<bool> onCheck;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+
+  /// Enters multi-select (PLAN §3 "long-press = multi-select mode").
+  final VoidCallback? onLongPress;
+  final bool selectionMode;
+  final bool selected;
+
+  /// Manual-sort drag handle index; null hides the handle.
+  final int? dragIndex;
 
   String get _qtyLabel {
     final qty = item.quantity;
@@ -47,7 +59,10 @@ class ItemTile extends ConsumerWidget {
 
     return Dismissible(
       key: ValueKey('dismiss-${item.id}'),
-      direction: DismissDirection.endToStart,
+      // Swipes fight selection taps and drag handles.
+      direction: selectionMode
+          ? DismissDirection.none
+          : DismissDirection.endToStart,
       onDismissed: (_) => onDelete(),
       background: Container(
         color: scheme.error,
@@ -57,6 +72,7 @@ class ItemTile extends ConsumerWidget {
       ),
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: Gaps.page,
@@ -64,11 +80,23 @@ class ItemTile extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Checkbox(
-                value: item.checked,
-                shape: const CircleBorder(),
-                onChanged: (v) => onCheck(v ?? false),
-              ),
+              if (selectionMode)
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    selected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    color:
+                        selected ? scheme.primary : scheme.onSurfaceVariant,
+                  ),
+                )
+              else
+                Checkbox(
+                  value: item.checked,
+                  shape: const CircleBorder(),
+                  onChanged: (v) => onCheck(v ?? false),
+                ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,6 +180,21 @@ class ItemTile extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (dragIndex != null)
+                ReorderableDragStartListener(
+                  index: dragIndex!,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Gaps.sm,
+                      vertical: Gaps.sm,
+                    ),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      size: 20,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

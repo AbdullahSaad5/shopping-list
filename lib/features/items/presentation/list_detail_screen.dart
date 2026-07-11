@@ -12,6 +12,7 @@ import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/budget_math.dart';
 import 'package:tokri/core/utils/money_format.dart';
 import 'package:tokri/core/utils/share_codec.dart';
+import 'package:tokri/core/widgets/app_icons.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
 import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/core/widgets/toast.dart';
@@ -45,6 +46,89 @@ class ListDetailScreen extends ConsumerStatefulWidget {
 
 class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
   bool _doneCollapsed = false;
+
+  /// Multi-select (PLAN §3 "long-press = multi-select mode").
+  final Set<int> _selected = {};
+  bool get _selectionMode => _selected.isNotEmpty;
+
+  void _toggleSelect(int id) => setState(() {
+        if (!_selected.remove(id)) _selected.add(id);
+      });
+
+  Future<void> _bulkDelete() async {
+    final ids = _selected.toList();
+    final repo = ref.read(itemRepositoryProvider);
+    await repo.deleteMany(ids);
+    if (!mounted) return;
+    setState(_selected.clear);
+    showToast(
+      context,
+      '${ids.length} removed',
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () => repo.restoreMany(ids),
+      ),
+    );
+  }
+
+  void _bulkMove() {
+    final lists = (ref.read(activeListsProvider).valueOrNull ?? const [])
+        .where((l) => l.id != widget.listId)
+        .toList();
+    if (lists.isEmpty) return;
+    MenuSheet.show(
+      context,
+      title: 'Move ${_selected.length} to',
+      items: [
+        for (final list in lists)
+          MenuSheetItem(
+            icon: LucideIcons.list,
+            label: list.name,
+            onTap: () async {
+              await ref
+                  .read(itemRepositoryProvider)
+                  .moveMany(_selected.toList(), list.id);
+              if (mounted) {
+                setState(_selected.clear);
+                showToast(context, 'Moved to ${list.name}.');
+              }
+            },
+          ),
+      ],
+    );
+  }
+
+  void _bulkCategory() {
+    final categories = ref.read(categoryMapProvider).values.toList()
+      ..sort((a, b) => a.position.compareTo(b.position));
+    MenuSheet.show(
+      context,
+      title: 'Set category',
+      items: [
+        MenuSheetItem(
+          icon: LucideIcons.circleOff,
+          label: 'None',
+          onTap: () async {
+            await ref
+                .read(itemRepositoryProvider)
+                .setCategoryMany(_selected.toList(), null);
+            if (mounted) setState(_selected.clear);
+          },
+        ),
+        for (final category in categories)
+          MenuSheetItem(
+            icon: resolveIcon(category.icon),
+            label: category.name,
+            onTap: () async {
+              await ref
+                  .read(itemRepositoryProvider)
+                  .setCategoryMany(_selected.toList(), category.id);
+              if (mounted) setState(_selected.clear);
+            },
+          ),
+      ],
+    );
+  }
 
   Future<void> _sortMenu(ListSortMode current) {
     const labels = {
@@ -223,7 +307,68 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
 
     final list = listAsync.valueOrNull;
 
+    // A tombstoned list can still be a launch target (deleted default
+    // list, stale deep link) — bail to home instead of a ghost screen.
+    if (listAsync.hasValue && list == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.goNamed(AppRoute.home.name);
+      });
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final hasOpenItems = itemsAsync.valueOrNull?.open.isNotEmpty ?? false;
+
+    if (_selectionMode) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Cancel selection',
+            icon: const Icon(LucideIcons.x, size: 20),
+            onPressed: () => setState(_selected.clear),
+          ),
+          title: Text('${_selected.length} selected'),
+          actions: [
+            IconButton(
+              tooltip: 'Set category',
+              icon: const Icon(LucideIcons.tags, size: 20),
+              onPressed: _bulkCategory,
+            ),
+            IconButton(
+              tooltip: 'Move to list',
+              icon: const Icon(LucideIcons.arrowRightLeft, size: 20),
+              onPressed: _bulkMove,
+            ),
+            IconButton(
+              tooltip: 'Delete',
+              icon: Icon(
+                LucideIcons.trash2,
+                size: 20,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              onPressed: _bulkDelete,
+            ),
+            const SizedBox(width: Gaps.sm),
+          ],
+        ),
+        body: itemsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('$e')),
+          data: (items) => _ItemsList(
+            listId: widget.listId,
+            items: items,
+            sort: sort,
+            categories: categories,
+            doneCollapsed: _doneCollapsed,
+            onToggleDone: () =>
+                setState(() => _doneCollapsed = !_doneCollapsed),
+            selectedIds: _selected,
+            onToggleSelect: _toggleSelect,
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -284,6 +429,8 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
                   doneCollapsed: _doneCollapsed,
                   onToggleDone: () =>
                       setState(() => _doneCollapsed = !_doneCollapsed),
+                  selectedIds: _selected,
+                  onToggleSelect: _toggleSelect,
                 );
               },
             ),
@@ -383,6 +530,8 @@ class _ItemsList extends ConsumerWidget {
     required this.categories,
     required this.doneCollapsed,
     required this.onToggleDone,
+    required this.selectedIds,
+    required this.onToggleSelect,
   });
 
   final int listId;
@@ -391,6 +540,10 @@ class _ItemsList extends ConsumerWidget {
   final Map<int, Category> categories;
   final bool doneCollapsed;
   final VoidCallback onToggleDone;
+  final Set<int> selectedIds;
+  final ValueChanged<int> onToggleSelect;
+
+  bool get _selectionMode => selectedIds.isNotEmpty;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -453,6 +606,25 @@ class _ItemsList extends ConsumerWidget {
           children.add(_tile(context, repo, item));
         }
       }
+    } else if (sort == ListSortMode.manual && !_selectionMode) {
+      // Drag to reorder (PLAN §6.2): handles only in manual sort.
+      children.add(
+        ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: items.open.length,
+          // onReorderItem pre-adjusts newIndex for the removed slot.
+          onReorderItem: (oldIndex, newIndex) {
+            final order = items.open.map((i) => i.id).toList();
+            final moved = order.removeAt(oldIndex);
+            order.insert(newIndex, moved);
+            repo.reorder(order);
+          },
+          itemBuilder: (context, i) =>
+              _tile(context, repo, items.open[i], dragIndex: i),
+        ),
+      );
     } else {
       for (final item in items.open) {
         children.add(_tile(context, repo, item));
@@ -507,14 +679,25 @@ class _ItemsList extends ConsumerWidget {
     );
   }
 
-  Widget _tile(BuildContext context, ItemRepository repo, Item item) {
+  Widget _tile(
+    BuildContext context,
+    ItemRepository repo,
+    Item item, {
+    int? dragIndex,
+  }) {
     return ItemTile(
       key: ValueKey(item.id),
       item: item,
       category:
           item.categoryId == null ? null : categories[item.categoryId],
+      selectionMode: _selectionMode,
+      selected: selectedIds.contains(item.id),
+      onLongPress: () => onToggleSelect(item.id),
+      dragIndex: dragIndex,
       onCheck: (checked) => repo.setChecked(item.id, checked: checked),
-      onTap: () => ItemEditSheet.show(context, item: item),
+      onTap: _selectionMode
+          ? () => onToggleSelect(item.id)
+          : () => ItemEditSheet.show(context, item: item),
       onDelete: () async {
         await repo.delete(item.id);
         if (context.mounted) {

@@ -60,6 +60,9 @@ class TemplatesScreen extends ConsumerWidget {
             );
           }
           return ListView.builder(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.paddingOf(context).bottom + Gaps.xl,
+            ),
             itemCount: rows.length,
             itemBuilder: (context, i) {
               final template = rows[i];

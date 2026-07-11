@@ -12,6 +12,7 @@ import 'package:tokri/core/utils/item_parser.dart';
 import 'package:tokri/core/utils/money_format.dart';
 import 'package:tokri/core/utils/urdu_aliases.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
+import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/items/data/category_repository.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
 import 'package:tokri/features/lists/data/list_repository.dart';
@@ -49,7 +50,18 @@ class _ShopModeScreenState extends ConsumerState<ShopModeScreen> {
     if (ref.read(settingsProvider).haptics) {
       unawaited(HapticFeedback.selectionClick());
     }
-    await ref.read(itemRepositoryProvider).setChecked(item.id, checked: true);
+    final repo = ref.read(itemRepositoryProvider);
+    await repo.setChecked(item.id, checked: true);
+    if (!mounted) return;
+    // Fat-finger insurance: one tap undoes a wrong check mid-shop.
+    showToast(
+      context,
+      '${item.name} in cart',
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () => repo.setChecked(item.id, checked: false),
+      ),
+    );
   }
 
   @override
@@ -176,6 +188,11 @@ class _ShopList extends StatelessWidget {
     for (final item in items.open) {
       groups.putIfAbsent(item.categoryId, () => []).add(item);
     }
+    // PLAN §6.4: checked count shown per group header.
+    final doneCounts = <int?, int>{};
+    for (final item in items.done) {
+      doneCounts.update(item.categoryId, (n) => n + 1, ifAbsent: () => 1);
+    }
     final orderedKeys = groups.keys.toList()
       ..sort((a, b) {
         final pa = a == null ? 1 << 20 : categories[a]?.position ?? 1 << 19;
@@ -214,6 +231,15 @@ class _ShopList extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
+              if ((doneCounts[key] ?? 0) > 0) ...[
+                const SizedBox(width: Gaps.sm),
+                Text(
+                  '· ${doneCounts[key]} in cart',
+                  style: text.labelMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

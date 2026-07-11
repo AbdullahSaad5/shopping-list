@@ -41,7 +41,9 @@ class TripsScreen extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.only(bottom: Gaps.xl),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.paddingOf(context).bottom + Gaps.xl,
+            ),
             itemCount: rows.length,
             itemBuilder: (context, i) {
               final trip = rows[i];

@@ -17,6 +17,7 @@ import 'package:tokri/core/utils/share_codec.dart' show ImportException;
 import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/lists/data/list_repository.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Settings (PLAN §3, trimmed by M4): appearance, behavior, data.
 /// Dynamic color + global accent are deferred to M5 — the warm-bazaar
@@ -107,7 +108,10 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: Gaps.xl),
+        // Edge-to-edge: scroll clear of the system nav area.
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.paddingOf(context).bottom + Gaps.xl,
+        ),
         children: [
           const _SectionHeader('Appearance'),
           RadioGroup<ThemeMode>(
@@ -276,6 +280,46 @@ class SettingsScreen extends ConsumerWidget {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
             onTap: () => _clearData(context, ref),
+          ),
+          const _SectionHeader('About'),
+          AboutListTile(
+            icon: const Icon(LucideIcons.info),
+            applicationName: 'Tokri',
+            applicationVersion: '1.0.0',
+            applicationIcon: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/icon/icon.png',
+                width: 48,
+                height: 48,
+              ),
+            ),
+            aboutBoxChildren: const [
+              SizedBox(height: Gaps.md),
+              Text(
+                'Fast, offline shopping lists that understand Roman Urdu. '
+                'Your data never leaves this phone.',
+              ),
+            ],
+            child: const Text('About Tokri'),
+          ),
+          ListTile(
+            leading: const Icon(LucideIcons.userRound),
+            title: const Text('Developer'),
+            subtitle: const Text('Syed Abdullah Saad'),
+            onTap: () => launchUrl(
+              Uri.parse('https://abdullahsaad5.github.io'),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
+          ListTile(
+            leading: const Icon(LucideIcons.shieldCheck),
+            title: const Text('Privacy policy'),
+            subtitle: const Text('Fully offline — nothing collected'),
+            onTap: () => launchUrl(
+              Uri.parse('https://abdullahsaad5.github.io/tokri/privacy/'),
+              mode: LaunchMode.externalApplication,
+            ),
           ),
         ],
       ),

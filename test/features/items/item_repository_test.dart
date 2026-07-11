@@ -189,6 +189,28 @@ void main() {
     expect(hits.map((h) => h.displayName), contains('Mlik'));
   });
 
+  test('bulk ops: deleteMany, moveMany, setCategoryMany', () async {
+    final other = await ListRepository(db)
+        .create(name: 'Other', colorSeed: 1, icon: 'gift');
+    final a = await repo.add(listId, const ParsedItem(name: 'A'));
+    final b = await repo.add(listId, const ParsedItem(name: 'B'));
+    final c = await repo.add(listId, const ParsedItem(name: 'C'));
+
+    await repo.deleteMany([a, b]);
+    var rows = await repo.watchForList(listId, ListSortMode.manual).first;
+    expect(rows.open.map((i) => i.id), [c]);
+    await repo.restoreMany([a, b]);
+
+    await repo.moveMany([a, b], other);
+    rows = await repo.watchForList(other, ListSortMode.manual).first;
+    expect(rows.open.map((i) => i.name), ['A', 'B']);
+
+    final produce = (await CategoryRepository(db).watchAll().first).first;
+    await repo.setCategoryMany([c], produce.id);
+    rows = await repo.watchForList(listId, ListSortMode.manual).first;
+    expect(rows.open.single.categoryId, produce.id);
+  });
+
   test('reorder persists manual positions', () async {
     final a = await repo.add(listId, const ParsedItem(name: 'A'));
     final b = await repo.add(listId, const ParsedItem(name: 'B'));

@@ -75,6 +75,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   : 'Find an item on any list, or jump to a list by name.',
             )
           : ListView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.paddingOf(context).bottom + Gaps.xl,
+              ),
               children: [
                 for (final list in _results.lists)
                   ListTile(
