@@ -1,0 +1,8 @@
+{
+  "@@locale": "en",
+  "appName": "Tokri",
+  "homeTitle": "My Lists",
+  "homeEmptyTitle": "Your tokri is empty",
+  "homeEmptyMessage": "Create your first list and start filling it.",
+  "newList": "New list"
+}
