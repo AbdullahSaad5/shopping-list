@@ -202,9 +202,13 @@ class _ListFormScreenState extends ConsumerState<ListFormScreen> {
         ),
         child: SizedBox(
           height: 52,
-          child: FilledButton(
-            onPressed: _save,
-            child: Text(_isEditing ? 'Save' : 'Create list'),
+          // Disabled until there's a name — no silent no-op taps.
+          child: ValueListenableBuilder(
+            valueListenable: _name,
+            builder: (context, value, _) => FilledButton(
+              onPressed: value.text.trim().isEmpty ? null : _save,
+              child: Text(_isEditing ? 'Save' : 'Create list'),
+            ),
           ),
         ),
       ),

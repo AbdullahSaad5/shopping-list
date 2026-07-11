@@ -96,6 +96,8 @@ class _CategoryFormSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
+      useSafeArea: true,
+      showDragHandle: true,
       isScrollControlled: true,
       builder: (_) => _CategoryFormSheet(category: category),
     );

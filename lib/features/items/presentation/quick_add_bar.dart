@@ -9,6 +9,7 @@ import 'package:tokri/core/flags.dart';
 import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/item_parser.dart';
 import 'package:tokri/core/utils/urdu_aliases.dart';
+import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
 
 /// The always-visible entry bar at the bottom of a list: type, see catalog
@@ -176,14 +177,10 @@ class _QuickAddBarState extends ConsumerState<QuickAddBar> {
                   if (kVoiceAddEnabled) ...[
                     IconButton.filledTonal(
                       tooltip: 'Voice add',
-                      onPressed: () => ScaffoldMessenger.of(context)
-                          .showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Voice add is not wired up yet — flag is on '
-                            'for development only.',
-                          ),
-                        ),
+                      onPressed: () => showToast(
+                        context,
+                        'Voice add is not wired up yet — flag is on for '
+                        'development only.',
                       ),
                       icon: const Icon(LucideIcons.mic, size: 20),
                     ),

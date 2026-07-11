@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
+import 'package:tokri/core/widgets/sheet_insets.dart';
 import 'package:tokri/features/trips/data/trip_repository.dart';
 
 /// Shop-mode quick price entry (PLAN §6.4): numeric pad sheet; the entered
@@ -16,8 +17,10 @@ class PricePadSheet extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context, {required Item item}) =>
       showModalBottomSheet<void>(
         context: context,
-        isScrollControlled: true,
+        useRootNavigator: true,
         useSafeArea: true,
+        showDragHandle: true,
+        isScrollControlled: true,
         builder: (_) => PricePadSheet(item: item),
       );
 
@@ -34,6 +37,11 @@ class _PricePadSheetState extends ConsumerState<PricePadSheet> {
     final minor = widget.item.priceMinor;
     _controller = TextEditingController(
       text: minor == null ? '' : (minor / 100).round().toString(),
+    );
+    // Typing should replace the old price, not append to it.
+    _controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _controller.text.length,
     );
   }
 
@@ -54,13 +62,12 @@ class _PricePadSheetState extends ConsumerState<PricePadSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     return Padding(
       padding: EdgeInsets.fromLTRB(
         Gaps.page,
-        Gaps.lg,
+        0,
         Gaps.page,
-        bottomInset + Gaps.lg,
+        sheetBottomInset(context),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

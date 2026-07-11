@@ -14,6 +14,7 @@ import 'package:tokri/core/db/seed.dart';
 import 'package:tokri/core/providers/database_provider.dart';
 import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/share_codec.dart' show ImportException;
+import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/lists/data/list_repository.dart';
 
 /// Settings (PLAN §3, trimmed by M4): appearance, behavior, data.
@@ -23,8 +24,7 @@ class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   void _toast(BuildContext context, String message) =>
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+      showToast(context, message);
 
   Future<void> _exportBackup(BuildContext context, WidgetRef ref) async {
     final json = await exportBackup(ref.read(databaseProvider));

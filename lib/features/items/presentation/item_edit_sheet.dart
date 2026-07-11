@@ -20,6 +20,8 @@ class ItemEditSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
+      useSafeArea: true,
+      showDragHandle: true,
       isScrollControlled: true,
       builder: (_) => ItemEditSheet(item: item),
     );
@@ -86,7 +88,7 @@ class _ItemEditSheetState extends ConsumerState<ItemEditSheet> {
     final categories =
         ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
 
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         Gaps.page,
         0,
@@ -213,9 +215,13 @@ class _ItemEditSheetState extends ConsumerState<ItemEditSheet> {
           SizedBox(
             width: double.infinity,
             height: 50,
-            child: FilledButton(
-              onPressed: _save,
-              child: const Text('Save'),
+            // Disabled until there's a name — no silent no-op saves.
+            child: ValueListenableBuilder(
+              valueListenable: _name,
+              builder: (context, value, _) => FilledButton(
+                onPressed: value.text.trim().isEmpty ? null : _save,
+                child: const Text('Save'),
+              ),
             ),
           ),
         ],

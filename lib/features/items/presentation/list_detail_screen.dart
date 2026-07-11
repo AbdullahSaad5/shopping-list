@@ -14,6 +14,7 @@ import 'package:tokri/core/utils/money_format.dart';
 import 'package:tokri/core/utils/share_codec.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
 import 'package:tokri/core/widgets/menu_sheet.dart';
+import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/items/data/category_repository.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
 import 'package:tokri/features/items/presentation/item_edit_sheet.dart';
@@ -124,11 +125,7 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
           subtitle: 'Reuse this list from Templates',
           onTap: () async {
             await listsRepo.saveAsTemplate(widget.listId);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Saved to Templates.')),
-              );
-            }
+            if (mounted) showToast(context, 'Saved to Templates.');
           },
         ),
         if (items.isNotEmpty) ...[
@@ -139,11 +136,7 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
               await Clipboard.setData(
                 ClipboardData(text: shareText(list.name, items)),
               );
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Copied.')),
-                );
-              }
+              if (mounted) showToast(context, 'Copied.');
             },
           ),
           MenuSheetItem(
@@ -169,8 +162,7 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
     try {
       data = buildImportUri(name, items).toString();
     } on ImportException catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+      showToast(context, e.message);
       return;
     }
     showDialog<void>(
@@ -514,13 +506,12 @@ class _ItemsList extends ConsumerWidget {
       onDelete: () async {
         await repo.delete(item.id);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${item.name} removed'),
-              action: SnackBarAction(
-                label: 'Undo',
-                onPressed: () => repo.restore(item.id),
-              ),
+          showToast(
+            context,
+            '${item.name} removed',
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () => repo.restore(item.id),
             ),
           );
         }

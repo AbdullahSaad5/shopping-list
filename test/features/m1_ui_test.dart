@@ -51,6 +51,8 @@ void main() {
       expect(find.text('Create list'), findsOneWidget);
 
       await tester.enterText(find.byType(TextField).first, 'Groceries');
+      // The button enables on the next frame (disabled while unnamed).
+      await tester.pump();
       await tester.tap(find.text('Create list'));
       await tester.pumpAndSettle();
 
@@ -120,6 +122,7 @@ void main() {
       expect(find.text('Edit list'), findsOneWidget);
 
       await tester.enterText(find.byType(TextField).first, 'New name');
+      await tester.pump();
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 

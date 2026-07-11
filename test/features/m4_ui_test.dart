@@ -54,6 +54,7 @@ void main() {
     await tester.tap(find.text('Weekly'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Week 29');
+    await tester.pump();
     await tester.tap(find.text('Create list'));
     await tester.pumpAndSettle();
 

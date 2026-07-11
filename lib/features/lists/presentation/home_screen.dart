@@ -8,6 +8,7 @@ import 'package:tokri/core/utils/money_format.dart';
 import 'package:tokri/core/widgets/app_icons.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
 import 'package:tokri/core/widgets/menu_sheet.dart';
+import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/lists/data/list_repository.dart';
 import 'package:tokri/features/lists/presentation/list_form_screen.dart';
 import 'package:tokri/l10n/generated/app_localizations.dart';
@@ -146,13 +147,12 @@ class _ListCard extends ConsumerWidget {
           onTap: () async {
             await repo.delete(list.id);
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${list.name} deleted'),
-                  action: SnackBarAction(
-                    label: 'Undo',
-                    onPressed: () => repo.restore(list.id),
-                  ),
+              showToast(
+                context,
+                '${list.name} deleted',
+                action: SnackBarAction(
+                  label: 'Undo',
+                  onPressed: () => repo.restore(list.id),
                 ),
               );
             }

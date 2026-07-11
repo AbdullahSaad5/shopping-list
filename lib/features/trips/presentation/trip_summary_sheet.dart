@@ -5,6 +5,7 @@ import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/utils/ledgr_link.dart';
 import 'package:tokri/core/utils/money_format.dart';
+import 'package:tokri/core/widgets/sheet_insets.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -20,7 +21,9 @@ class TripSummarySheet extends ConsumerWidget {
   static Future<void> show(BuildContext context, {required Trip trip}) =>
       showModalBottomSheet<void>(
         context: context,
+        useRootNavigator: true,
         useSafeArea: true,
+        showDragHandle: true,
         builder: (_) => TripSummarySheet(trip: trip),
       );
 
@@ -43,11 +46,13 @@ class TripSummarySheet extends ConsumerWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         Gaps.page,
-        Gaps.lg,
+        0,
         Gaps.page,
-        Gaps.lg,
+        // Clears the system nav bar — the close button was getting clipped
+        // behind 3-button navigation (ledgr lesson, applied late).
+        sheetBottomInset(context),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
