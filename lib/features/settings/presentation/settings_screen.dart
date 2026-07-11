@@ -215,6 +215,13 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           SwitchListTile(
+            secondary: const Icon(LucideIcons.languages),
+            title: const Text('Urdu names on suggestions'),
+            subtitle: const Text('Chips read "Milk · Doodh"'),
+            value: settings.showUrduNames,
+            onChanged: (on) => notifier.setShowUrduNames(enabled: on),
+          ),
+          SwitchListTile(
             secondary: const Icon(LucideIcons.vibrate),
             title: const Text('Haptics'),
             subtitle: const Text('Buzz on check-off'),

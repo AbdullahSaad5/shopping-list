@@ -20,6 +20,7 @@ class AppSettings {
     this.currencySymbol = 'Rs ',
     this.haptics = true,
     this.wakelockInShop = true,
+    this.showUrduNames = true,
     this.defaultListId,
   });
 
@@ -31,6 +32,9 @@ class AppSettings {
   final bool haptics;
   final bool wakelockInShop;
 
+  /// Suggestion chips read "Milk · Doodh" when on.
+  final bool showUrduNames;
+
   /// Opens this list on launch instead of home when set.
   final int? defaultListId;
 
@@ -40,6 +44,7 @@ class AppSettings {
     String? currencySymbol,
     bool? haptics,
     bool? wakelockInShop,
+    bool? showUrduNames,
     int? Function()? defaultListId,
   }) =>
       AppSettings(
@@ -48,6 +53,7 @@ class AppSettings {
         currencySymbol: currencySymbol ?? this.currencySymbol,
         haptics: haptics ?? this.haptics,
         wakelockInShop: wakelockInShop ?? this.wakelockInShop,
+        showUrduNames: showUrduNames ?? this.showUrduNames,
         defaultListId:
             defaultListId == null ? this.defaultListId : defaultListId(),
       );
@@ -67,6 +73,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   static const _kHaptics = 'haptics';
   static const _kWakelock = 'wakelockInShop';
   static const _kDefaultList = 'defaultListId';
+  static const _kUrduNames = 'showUrduNames';
 
   static AppSettings _load(SharedPreferences prefs) => AppSettings(
         themeMode: ThemeMode.values.asNameMap()[prefs.getString(_kTheme)] ??
@@ -75,6 +82,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         currencySymbol: prefs.getString(_kSymbol) ?? 'Rs ',
         haptics: prefs.getBool(_kHaptics) ?? true,
         wakelockInShop: prefs.getBool(_kWakelock) ?? true,
+        showUrduNames: prefs.getBool(_kUrduNames) ?? true,
         defaultListId: prefs.getInt(_kDefaultList),
       );
 
@@ -101,6 +109,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setWakelockInShop({required bool enabled}) async {
     await _prefs?.setBool(_kWakelock, enabled);
     state = state.copyWith(wakelockInShop: enabled);
+  }
+
+  Future<void> setShowUrduNames({required bool enabled}) async {
+    await _prefs?.setBool(_kUrduNames, enabled);
+    state = state.copyWith(showUrduNames: enabled);
   }
 
   Future<void> setDefaultListId(int? id) async {

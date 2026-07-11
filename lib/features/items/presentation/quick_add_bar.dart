@@ -6,7 +6,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/flags.dart';
+import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/item_parser.dart';
+import 'package:tokri/core/utils/urdu_aliases.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
 
 /// The always-visible entry bar at the bottom of a list: type, see catalog
@@ -127,8 +129,20 @@ class _QuickAddBarState extends ConsumerState<QuickAddBar> {
                         const SizedBox(width: Gaps.sm),
                     itemBuilder: (context, i) {
                       final entry = _suggestions[i];
+                      // "Milk · Doodh" so the Urdu-only reader knows what
+                      // they're picking; toggle in Settings.
+                      final urdu = ref.watch(
+                                settingsProvider
+                                    .select((s) => s.showUrduNames),
+                              )
+                          ? urduLabelFor(entry.nameNormalized)
+                          : null;
                       return ActionChip(
-                        label: Text(entry.displayName),
+                        label: Text(
+                          urdu == null
+                              ? entry.displayName
+                              : '${entry.displayName} · $urdu',
+                        ),
                         onPressed: () => _submit(entry.displayName),
                       );
                     },

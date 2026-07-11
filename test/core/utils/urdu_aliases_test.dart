@@ -134,8 +134,57 @@ void main() {
       expect(canonicalsFor('zaitoon ka tel'), ['olive oil']);
     });
 
+    test('medicines and pharmacy words people actually use', () {
+      expect(canonicalsFor('brufen'), ['ibuprofen']);
+      expect(canonicalsFor('disprin'), ['aspirin']);
+      expect(canonicalsFor('eno'), ['antacid']);
+      expect(canonicalsFor('strepsils'), ['lozenges']);
+      expect(canonicalsFor('vicks'), ['balm']);
+      expect(canonicalsFor('glucose d'), ['glucose powder']);
+      expect(canonicalsFor('khansi ka syrup'), ['cough syrup']);
+      expect(canonicalsFor('bukhar ki dawa'), ['paracetamol']);
+      expect(canonicalsFor('cerelac'), ['baby cereal']);
+      expect(canonicalsFor('chusni'), ['soother']);
+      expect(canonicalsFor('vaseline'), ['petroleum jelly']);
+    });
+
+    test('household odds and ends', () {
+      expect(canonicalsFor('mombatti'), ['candles']);
+      expect(canonicalsFor('balti'), ['bucket']);
+      expect(canonicalsFor('joona'), ['scrubber']);
+      expect(canonicalsFor('chimtiyan'), ['clothes pegs']);
+      expect(canonicalsFor('hara pyaz'), ['spring onion']);
+      expect(canonicalsFor('tinda'), ['tinday']);
+      expect(canonicalsFor('nariyal'), isEmpty,
+          reason: 'nariyal is its own seed row');
+      expect(canonicalsFor('coconut'), ['nariyal']);
+      expect(canonicalsFor('knorr'), ['chicken cubes']);
+      expect(canonicalsFor('blue band'), ['margarine']);
+      expect(canonicalsFor('sting'), ['energy drink']);
+      expect(canonicalsFor('tang'), ['powdered drink mix']);
+      expect(canonicalsFor('mithai'), ['candy']);
+    });
+
     test('the table is genuinely big now', () {
-      expect(kUrduAliases.length, greaterThanOrEqualTo(280));
+      expect(kUrduAliases.length, greaterThanOrEqualTo(380));
+    });
+
+    test('every Urdu display label targets a real seed row', () {
+      final seeded =
+          kSeedCatalog.map((e) => normalizeItemName(e.name)).toSet();
+      for (final key in kUrduDisplayNames.keys) {
+        expect(seeded, contains(key), reason: key);
+      }
+    });
+
+    test('urduLabelFor: common pairs, null when same-enough', () {
+      expect(urduLabelFor('milk'), 'Doodh');
+      expect(urduLabelFor('eggs'), 'Anday');
+      expect(urduLabelFor('vermicelli'), 'Sawaiyan');
+      expect(urduLabelFor('paracetamol'), 'Panadol');
+      expect(urduLabelFor('diapers'), 'Pampers');
+      expect(urduLabelFor('lauki'), isNull, reason: 'already Urdu');
+      expect(urduLabelFor('pizza base'), isNull);
     });
   });
 

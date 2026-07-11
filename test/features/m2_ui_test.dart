@@ -117,6 +117,22 @@ void main() {
     });
   });
 
+  group('bilingual chips', () {
+    testWidgets('suggestion chips read "English · Urdu"', (tester) async {
+      final listId = await makeList(tester);
+      await tester.pumpWidget(wrap(ListDetailScreen(listId: listId)));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).last, 'doodh');
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(ActionChip, 'Milk \u00b7 Doodh'),
+          findsOneWidget);
+      await unmount(tester);
+    });
+  });
+
   group('bulk paste', () {
     testWidgets('multiline text parses into one item per line',
         (tester) async {

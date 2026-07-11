@@ -23,6 +23,7 @@ const Map<String, List<String>> kUrduAliases = {
   'ghee': ['desi ghee'],
   'banaspati': ['banaspati ghee'], 'dalda': ['banaspati ghee'],
   'vanaspati': ['banaspati ghee'],
+  'blue band': ['margarine'], 'blueband': ['margarine'],
   'khoya': ['cream'],
   'doodh powder': ['milk powder'], 'khushk doodh': ['milk powder'],
 
@@ -111,6 +112,11 @@ const Map<String, List<String>> kUrduAliases = {
   'makkai': ['makai'], 'challi': ['makai'], 'chhalli': ['makai'],
   'salad patta': ['lettuce'], 'salad': ['lettuce'],
   'sag': ['saag'], 'sarson ka saag': ['saag'],
+  'hara pyaz': ['spring onion'], 'haray pyaz': ['spring onion'],
+  'khumbi': ['mushrooms'], 'mushroom': ['mushrooms'],
+  'phaliyan': ['french beans'], 'phalliyan': ['french beans'],
+  'beans': ['french beans'],
+  'tinda': ['tinday'], 'tinde': ['tinday'],
 
   // Fruit
   'aam': ['mangoes'], 'amb': ['mangoes'],
@@ -134,6 +140,12 @@ const Map<String, List<String>> kUrduAliases = {
   'papaya': ['papita'],
   'strawberry': ['strawberries'],
   'cheeku': ['chikoo'], 'chiku': ['chikoo'],
+  'peach': ['aaru'], 'aru': ['aaru'],
+  'apricot': ['khubani'], 'khobani': ['khubani'],
+  'plum': ['aloocha'], 'alucha': ['aloocha'], 'aloo bukhara fresh': ['aloocha'],
+  'jamun': ['jaman'],
+  'lichi': ['lychee'], 'litchi': ['lychee'],
+  'coconut': ['nariyal'], 'narial': ['nariyal'], 'khopa': ['nariyal'],
 
   // Meat & Fish
   'murghi': ['chicken'], 'murgi': ['chicken'], 'murgh': ['chicken'],
@@ -172,6 +184,13 @@ const Map<String, List<String>> kUrduAliases = {
   'ajwaain': ['ajwain'],
   'kalongi': ['kalonji'], 'kalwanji': ['kalonji'],
   'zaitoon ka tel': ['olive oil'], 'zaitoon': ['olive oil'],
+  'sesame seeds': ['til'], 'sesame': ['til'],
+  'desiccated coconut': ['khopra'],
+  'dried plums': ['aloo bukhara'],
+  'knorr cube': ['chicken cubes'], 'yakhni cube': ['chicken cubes'],
+  'knorr': ['chicken cubes'], 'stock cube': ['chicken cubes'],
+  'adrak lehsun paste': ['ginger garlic paste'],
+  'lehsun adrak paste': ['ginger garlic paste'],
   'shehad': ['honey'], 'shehed': ['honey'], 'shahad': ['honey'],
   'gurr': ['gur'],
   'badam': ['almonds'],
@@ -196,6 +215,8 @@ const Map<String, List<String>> kUrduAliases = {
   'cold drink': ['soft drink'], 'colddrink': ['soft drink'],
   'botal': ['soft drink'],
   'roohafza': ['rooh afza'],
+  'sting': ['energy drink'], 'red bull': ['energy drink'],
+  'tang': ['powdered drink mix'], 'energile': ['powdered drink mix'],
 
   // Bakery
   'double roti': ['bread'], 'dubble roti': ['bread'],
@@ -207,6 +228,11 @@ const Map<String, List<String>> kUrduAliases = {
   'biskut': ['biscuits'],
   'chaklet': ['chocolate'],
   'papad': ['papar'],
+  'toffee': ['candy'], 'toffiyan': ['candy'], 'tofiyan': ['candy'],
+  'mithai': ['candy'],
+  'patties': ['chicken patties'], 'pattice': ['chicken patties'],
+  'pastry': ['pastries'],
+  'pita': ['pita bread'], 'shawarma bread': ['pita bread'],
 
   // Frozen
   'samosa': ['frozen samosa'], 'samosay': ['frozen samosa'],
@@ -218,6 +244,7 @@ const Map<String, List<String>> kUrduAliases = {
   'kabaab': ['frozen kebab'],
   'nuggets': ['chicken nuggets'],
   'fries': ['french fries'], 'finger chips': ['french fries'],
+  'spring roll': ['spring rolls'], 'rolls': ['spring rolls'],
 
   // Household & personal
   'sabun': ['soap bars'], 'saban': ['soap bars'],
@@ -245,8 +272,29 @@ const Map<String, List<String>> kUrduAliases = {
   'balon ka tel': ['hair oil'],
   'pads': ['sanitary pads'],
   'pampers': ['diapers'], 'diaper': ['diapers'],
-  'panadol': ['paracetamol'],
-  'sanitizer': ['hand sanitizer'],
+  'cerelac': ['baby cereal'],
+  'chusni': ['soother'], 'nipple': ['soother'],
+  'panadol': ['paracetamol'], 'pain killer': ['paracetamol'],
+  'bukhar ki dawa': ['paracetamol'],
+  'brufen': ['ibuprofen'],
+  'disprin': ['aspirin'],
+  'eno': ['antacid'], 'gas ki dawa': ['antacid'],
+  'khansi ka syrup': ['cough syrup'], 'khansi ki dawa': ['cough syrup'],
+  'strepsils': ['lozenges'],
+  'vicks': ['balm'], 'tiger balm': ['balm'], 'iodex': ['balm'],
+  'glucose': ['glucose powder'], 'glucose d': ['glucose powder'],
+  'mask': ['face masks'], 'masks': ['face masks'],
+  'sanitizer': ['hand sanitizer'], 'hath dhone wala': ['hand sanitizer'],
+  'vaseline': ['petroleum jelly'],
+  'powder': ['talcum powder'],
+  'henna': ['mehndi'], 'mehendi': ['mehndi'],
+  'mombatti': ['candles'], 'mombattiyan': ['candles'],
+  'candle': ['candles'],
+  'balti': ['bucket'],
+  'joona': ['scrubber'], 'juna': ['scrubber'],
+  'chimti': ['clothes pegs'], 'chimtiyan': ['clothes pegs'],
+  'kapray latkane wali chimti': ['clothes pegs'],
+  'phenyl ki goliyan': ['naphthalene balls'],
 };
 
 /// Canonical seed names for a normalized word; empty when unknown.
@@ -263,3 +311,77 @@ Set<String> aliasCanonicalsForPrefix(String prefix) {
       if (entry.key.startsWith(prefix)) ...entry.value,
   };
 }
+
+/// One preferred Roman-Urdu label per canonical seed row, shown next to the
+/// English name on suggestion chips ("Milk · Doodh") so someone who only
+/// knows the Urdu word understands what they're picking (Saad, 2026-07-11).
+/// Only rows whose common Urdu name differs meaningfully get an entry —
+/// Urdu-primary rows (Lauki, Amrood, Kaleji…) already read right.
+/// Integrity is test-enforced against the seed catalog.
+const Map<String, String> kUrduDisplayNames = {
+  // Dairy & Eggs
+  'milk': 'Doodh', 'eggs': 'Anday', 'yogurt': 'Dahi', 'butter': 'Makhan',
+  'cream': 'Malai', 'margarine': 'Blue Band', 'milk powder': 'Khushk doodh',
+  // Staples & grains
+  'basmati rice': 'Chawal', 'sugar': 'Cheeni', 'brown sugar': 'Shakkar',
+  'salt': 'Namak', 'vermicelli': 'Sawaiyan',
+  'white chickpeas': 'Kabuli chanay', 'red beans': 'Lobia',
+  'oats': 'Jai', 'cornflour': 'Makai ka atta',
+  // Vegetables
+  'potatoes': 'Aloo', 'onions': 'Pyaz', 'tomatoes': 'Tamatar',
+  'ginger': 'Adrak', 'garlic': 'Lehsun', 'green chillies': 'Hari mirch',
+  'coriander': 'Dhania', 'mint': 'Podina', 'spinach': 'Palak',
+  'okra': 'Bhindi', 'cauliflower': 'Phool gobi', 'cabbage': 'Band gobi',
+  'carrots': 'Gajar', 'peas': 'Matar', 'cucumber': 'Kheera',
+  'capsicum': 'Shimla mirch', 'brinjal': 'Baingan',
+  'bitter gourd': 'Karela', 'pumpkin': 'Kaddu', 'radish': 'Mooli',
+  'turnip': 'Shaljam', 'beetroot': 'Chukandar',
+  'spring onion': 'Hara pyaz', 'mushrooms': 'Khumbi',
+  'french beans': 'Phaliyan', 'lettuce': 'Salad patta',
+  // Fruit
+  'mangoes': 'Aam', 'bananas': 'Kelay', 'oranges': 'Santray',
+  'grapes': 'Angoor', 'pomegranate': 'Anar', 'dates': 'Khajoor',
+  'apples': 'Seb', 'lemons': 'Nimbu', 'lychee': 'Lichi',
+  // Meat & Fish
+  'chicken': 'Murghi', 'beef': 'Bara gosht', 'mutton': 'Chota gosht',
+  'fish': 'Machli', 'prawns': 'Jhinga',
+  // Spices & Condiments
+  'turmeric powder': 'Haldi', 'red chilli powder': 'Lal mirch',
+  'cumin': 'Zeera', 'black pepper': 'Kali mirch', 'cardamom': 'Elaichi',
+  'cinnamon': 'Darchini', 'cloves': 'Laung', 'bay leaves': 'Tez patta',
+  'tamarind': 'Imli', 'vinegar': 'Sirka', 'honey': 'Shehad',
+  'cooking oil': 'Tel', 'olive oil': 'Zaitoon ka tel',
+  'chicken cubes': 'Yakhni cube',
+  'coriander powder': 'Dhania powder',
+  // Snacks & dry fruit
+  'almonds': 'Badam', 'cashews': 'Kaju', 'raisins': 'Kishmish',
+  'peanuts': 'Moongphali', 'walnuts': 'Akhrot', 'pistachios': 'Pista',
+  'candy': 'Toffiyan',
+  // Beverages
+  'tea': 'Chai', 'mineral water': 'Pani', 'soft drink': 'Cold drink',
+  'powdered drink mix': 'Tang',
+  // Bakery & frozen
+  'bread': 'Double roti', 'frozen samosa': 'Samosay',
+  'frozen paratha': 'Parathay', 'frozen kebab': 'Kabab',
+  // Household
+  'soap bars': 'Sabun', 'laundry detergent': 'Surf',
+  'matchbox': 'Machis', 'candles': 'Mombatti', 'bucket': 'Balti',
+  'mop': 'Pocha', 'clothes pegs': 'Chimtiyan',
+  'scrubber': 'Joona', 'floor cleaner': 'Phenyl',
+  'toilet cleaner': 'Harpic', 'dishwashing liquid': 'Vim',
+  'antiseptic liquid': 'Dettol', 'mosquito repellent': 'Machar spray',
+  // Personal care & baby
+  'comb': 'Kanghi', 'petroleum jelly': 'Vaseline',
+  'hair oil': 'Balon ka tel', 'diapers': 'Pampers',
+  'baby cereal': 'Cerelac', 'soother': 'Chusni',
+  // Pharmacy
+  'paracetamol': 'Panadol', 'ibuprofen': 'Brufen', 'aspirin': 'Disprin',
+  'antacid': 'ENO', 'lozenges': 'Strepsils', 'balm': 'Vicks',
+  'cough syrup': 'Khansi ka syrup', 'glucose powder': 'Glucose-D',
+  'hand sanitizer': 'Sanitizer',
+};
+
+/// Roman-Urdu label for a canonical row, or null when the English name is
+/// what everyone says anyway.
+String? urduLabelFor(String nameNormalized) =>
+    kUrduDisplayNames[nameNormalized];
