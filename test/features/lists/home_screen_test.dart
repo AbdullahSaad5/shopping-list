@@ -23,12 +23,20 @@ void main() {
         ),
       );
 
+  // Drift schedules a zero-duration timer when a query stream's last listener
+  // goes away; pump it out before the binding's pending-timer check.
+  Future<void> unmount(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('boots to the empty home', (tester) async {
     await tester.pumpWidget(wrap());
     await tester.pumpAndSettle();
 
     expect(find.text('My Lists'), findsOneWidget);
     expect(find.text('Your tokri is empty'), findsOneWidget);
+    await unmount(tester);
   });
 
   testWidgets('shows lists pinned-first once they exist', (tester) async {
@@ -57,5 +65,6 @@ void main() {
     final hardware = tester.getTopLeft(find.text('Hardware'));
     expect(hardware.dy, lessThan(groceries.dy),
         reason: 'pinned lists sort first');
+    await unmount(tester);
   });
 }
