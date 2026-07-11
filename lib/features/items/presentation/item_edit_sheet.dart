@@ -6,9 +6,12 @@ import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/db/seed.dart';
 import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/widgets/app_icons.dart';
+import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/core/widgets/sheet_insets.dart';
+import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/items/data/category_repository.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
+import 'package:tokri/features/lists/data/list_repository.dart';
 
 /// Edit an item's details (redesigned per Saad 2026-07-11): labeled
 /// sections, a quantity stepper, wrapped chips so nothing scrolls out of
@@ -31,6 +34,68 @@ class ItemEditSheet extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<ItemEditSheet> createState() => _ItemEditSheetState();
+}
+
+class _UnitSelector extends StatelessWidget {
+  const _UnitSelector({required this.unit, required this.onChanged});
+
+  final String unit;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Material(
+      color: scheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => MenuSheet.show(
+          context,
+          title: 'Unit',
+          items: [
+            for (final option in kUnits)
+              MenuSheetItem(
+                icon: option == unit
+                    ? LucideIcons.circleCheck
+                    : LucideIcons.circle,
+                label: option,
+                onTap: () => onChanged(option),
+              ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Gaps.md,
+            vertical: Gaps.sm,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Unit',
+                      style: text.labelSmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                    Text(unit, style: text.bodyLarge),
+                  ],
+                ),
+              ),
+              Icon(
+                LucideIcons.chevronsUpDown,
+                size: 16,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ItemEditSheetState extends ConsumerState<ItemEditSheet> {
@@ -172,19 +237,11 @@ class _ItemEditSheetState extends ConsumerState<ItemEditSheet> {
                 icon: const Icon(LucideIcons.plus, size: 18),
               ),
               const SizedBox(width: Gaps.md),
+              // Ledgr taste: selector tile + bottom sheet, never a dropdown.
               Expanded(
-                child: DropdownMenu<String>(
-                  initialSelection: _unit,
-                  label: const Text('Unit'),
-                  expandedInsets: EdgeInsets.zero,
-                  requestFocusOnTap: false,
-                  onSelected: (unit) {
-                    if (unit != null) setState(() => _unit = unit);
-                  },
-                  dropdownMenuEntries: [
-                    for (final unit in kUnits)
-                      DropdownMenuEntry(value: unit, label: unit),
-                  ],
+                child: _UnitSelector(
+                  unit: _unit,
+                  onChanged: (unit) => setState(() => _unit = unit),
                 ),
               ),
             ],
@@ -221,6 +278,52 @@ class _ItemEditSheetState extends ConsumerState<ItemEditSheet> {
             value: _priority,
             onChanged: (on) => setState(() => _priority = on),
           ),
+          _label('Move to list'),
+                  Builder(
+                    builder: (context) {
+                      final lists = ref
+                              .watch(activeListsProvider)
+                              .valueOrNull
+                              ?.where((l) => l.id != widget.item.listId)
+                              .toList() ??
+                          const <ShoppingList>[];
+                      return OutlinedButton.icon(
+                        icon: const Icon(
+                          LucideIcons.arrowRightLeft,
+                          size: 16,
+                        ),
+                        label: const Text('Move to another list'),
+                        onPressed: lists.isEmpty
+                            ? null
+                            : () => MenuSheet.show(
+                                  context,
+                                  title: 'Move to',
+                                  items: [
+                                    for (final list in lists)
+                                      MenuSheetItem(
+                                        icon: resolveIcon(list.icon),
+                                        label: list.name,
+                                        onTap: () async {
+                                          await ref
+                                              .read(itemRepositoryProvider)
+                                              .moveToList(
+                                                widget.item.id,
+                                                list.id,
+                                              );
+                                          if (context.mounted) {
+                                            Navigator.of(context).pop();
+                                            showToast(
+                                              context,
+                                              'Moved to ${list.name}.',
+                                            );
+                                          }
+                                        },
+                                      ),
+                                  ],
+                                ),
+                      );
+                    },
+                  ),
           _label('Category'),
                   Wrap(
                     spacing: Gaps.xs,

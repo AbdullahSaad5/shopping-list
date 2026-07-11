@@ -143,6 +143,52 @@ void main() {
     expect(recent.open.first.name, 'Apples', reason: 'newest first');
   });
 
+  test('moveToList reparents the item and appends at the end', () async {
+    final other = await ListRepository(db)
+        .create(name: 'Other', colorSeed: 1, icon: 'gift');
+    await repo.add(other, const ParsedItem(name: 'Existing'));
+    final milk = await repo.add(listId, const ParsedItem(name: 'Milk'));
+
+    await repo.moveToList(milk, other);
+
+    final source = await repo.watchForList(listId, ListSortMode.manual).first;
+    expect(source.open, isEmpty);
+    final target = await repo.watchForList(other, ListSortMode.manual).first;
+    expect(target.open.map((i) => i.name), ['Existing', 'Milk']);
+  });
+
+  test('clearChecked returns the ids so it can be undone', () async {
+    final a = await repo.add(listId, const ParsedItem(name: 'A'));
+    await repo.add(listId, const ParsedItem(name: 'B'));
+    await repo.setChecked(a, checked: true);
+
+    final cleared = await repo.clearChecked(listId);
+    expect(cleared, [a]);
+    var rows = await repo.watchForList(listId, ListSortMode.manual).first;
+    expect(rows.done, isEmpty);
+
+    await repo.restoreMany(cleared);
+    rows = await repo.watchForList(listId, ListSortMode.manual).first;
+    expect(rows.done, hasLength(1));
+  });
+
+  test('forgetSuggestion tombstones the catalog row; re-adding revives it',
+      () async {
+    await repo.add(listId, const ParsedItem(name: 'Mlik'));
+    var hits = await repo.suggest('mlik');
+    expect(hits.map((h) => h.displayName), contains('Mlik'));
+
+    final entry = hits.singleWhere((h) => h.displayName == 'Mlik');
+    await repo.forgetSuggestion(entry.id);
+    hits = await repo.suggest('mlik');
+    expect(hits.map((h) => h.displayName), isNot(contains('Mlik')));
+
+    // Adding it again teaches the catalog again (tombstone cleared).
+    await repo.add(listId, const ParsedItem(name: 'Mlik'));
+    hits = await repo.suggest('mlik');
+    expect(hits.map((h) => h.displayName), contains('Mlik'));
+  });
+
   test('reorder persists manual positions', () async {
     final a = await repo.add(listId, const ParsedItem(name: 'A'));
     final b = await repo.add(listId, const ParsedItem(name: 'B'));

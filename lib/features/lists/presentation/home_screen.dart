@@ -51,6 +51,12 @@ class HomeScreen extends ConsumerWidget {
                   onTap: () => context.push('/categories'),
                 ),
                 MenuSheetItem(
+                  icon: LucideIcons.footprints,
+                  label: 'Trips',
+                  subtitle: 'Past shopping sessions',
+                  onTap: () => context.push('/trips'),
+                ),
+                MenuSheetItem(
                   icon: LucideIcons.archive,
                   label: 'Archived lists',
                   onTap: () => context.push('/archived'),

@@ -77,6 +77,15 @@ class TemplatesScreen extends ConsumerWidget {
                   title: template.name,
                   items: [
                     MenuSheetItem(
+                      icon: LucideIcons.pencil,
+                      label: 'Edit items',
+                      subtitle: 'Change what this template contains',
+                      onTap: () => context.pushNamed(
+                        AppRoute.listDetail.name,
+                        pathParameters: {'id': '${template.id}'},
+                      ),
+                    ),
+                    MenuSheetItem(
                       icon: LucideIcons.trash2,
                       label: 'Delete template',
                       onTap: () =>

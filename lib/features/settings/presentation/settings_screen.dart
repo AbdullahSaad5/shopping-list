@@ -14,6 +14,7 @@ import 'package:tokri/core/db/seed.dart';
 import 'package:tokri/core/providers/database_provider.dart';
 import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/share_codec.dart' show ImportException;
+import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/lists/data/list_repository.dart';
 
@@ -138,42 +139,48 @@ class SettingsScreen extends ConsumerWidget {
                           .firstOrNull ??
                       'Home (all lists)',
             ),
-            onTap: () async {
-              final choice = await showDialog<int?>(
-                context: context,
-                builder: (context) => SimpleDialog(
-                  title: const Text('Open on launch'),
-                  children: [
-                    SimpleDialogOption(
-                      onPressed: () => Navigator.of(context).pop(-1),
-                      child: const Text('Home (all lists)'),
-                    ),
-                    for (final list in lists)
-                      SimpleDialogOption(
-                        onPressed: () => Navigator.of(context).pop(list.id),
-                        child: Text(list.name),
-                      ),
-                  ],
+            onTap: () => MenuSheet.show(
+              context,
+              title: 'Open on launch',
+              items: [
+                MenuSheetItem(
+                  icon: settings.defaultListId == null
+                      ? LucideIcons.circleCheck
+                      : LucideIcons.circle,
+                  label: 'Home (all lists)',
+                  onTap: () => notifier.setDefaultListId(null),
                 ),
-              );
-              if (choice != null) {
-                await notifier.setDefaultListId(choice == -1 ? null : choice);
-              }
-            },
+                for (final list in lists)
+                  MenuSheetItem(
+                    icon: list.id == settings.defaultListId
+                        ? LucideIcons.circleCheck
+                        : LucideIcons.circle,
+                    label: list.name,
+                    onTap: () => notifier.setDefaultListId(list.id),
+                  ),
+              ],
+            ),
           ),
           ListTile(
             leading: const Icon(LucideIcons.ruler),
             title: const Text('Default unit'),
-            trailing: DropdownButton<String>(
-              value: settings.defaultUnit,
-              underline: const SizedBox.shrink(),
+            trailing: Text(
+              settings.defaultUnit,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            onTap: () => MenuSheet.show(
+              context,
+              title: 'Default unit',
               items: [
                 for (final unit in kUnits)
-                  DropdownMenuItem(value: unit, child: Text(unit)),
+                  MenuSheetItem(
+                    icon: unit == settings.defaultUnit
+                        ? LucideIcons.circleCheck
+                        : LucideIcons.circle,
+                    label: unit,
+                    onTap: () => notifier.setDefaultUnit(unit),
+                  ),
               ],
-              onChanged: (unit) {
-                if (unit != null) notifier.setDefaultUnit(unit);
-              },
             ),
           ),
           ListTile(

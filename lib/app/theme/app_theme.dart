@@ -78,6 +78,10 @@ ThemeData tokriTheme(Brightness brightness) {
           onPrimaryContainer: Color(0xFFFFDBC7),
           secondary: Color(0xFFE3B04B),
           onSecondary: Color(0xFF2B2008),
+          // Tonal surfaces (filledTonal buttons, selected chips) — warm
+          // wheat, not the muddy olive the defaults derived (Saad).
+          secondaryContainer: Color(0xFF4A3A10),
+          onSecondaryContainer: Color(0xFFF2E1BD),
           tertiary: Color(0xFF8BC98A),
           onTertiary: Color(0xFF10290F),
           surface: Color(0xFF191210),
@@ -100,6 +104,10 @@ ThemeData tokriTheme(Brightness brightness) {
           onPrimaryContainer: Color(0xFF3A1A07),
           secondary: Color(0xFFA97B13),
           onSecondary: Colors.white,
+          // Tonal surfaces (filledTonal buttons, selected chips) — warm
+          // wheat, not the muddy olive the defaults derived (Saad).
+          secondaryContainer: Color(0xFFF6E5C4),
+          onSecondaryContainer: Color(0xFF4A3A10),
           tertiary: Color(0xFF3E7C3D),
           onTertiary: Colors.white,
           surface: Color(0xFFFBF7F1),

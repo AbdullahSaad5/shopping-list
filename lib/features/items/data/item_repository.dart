@@ -81,6 +81,14 @@ class ItemRepository {
             updatedAt: Value(DateTime.now()),
           ),
         );
+        // Every add teaches the catalog — also revives a suggestion the
+        // user "forgot" and then typed again on purpose.
+        await _learn(
+          normalized: normalized,
+          displayName: parsed.name,
+          unit: parsed.unit,
+          categoryId: existing.categoryId,
+        );
         return existing.id;
       }
 
@@ -389,16 +397,63 @@ class ItemRepository {
       );
 
   /// Tombstones every checked item on the list ("clear checked").
-  Future<void> clearChecked(int listId) =>
-      (_db.update(_db.items)
-            ..where(
-              (i) =>
-                  i.listId.equals(listId) &
-                  i.checked.equals(true) &
-                  i.deletedAt.isNull(),
-            ))
+  /// Returns the affected ids so the action can be undone.
+  Future<List<int>> clearChecked(int listId) => _db.transaction(() async {
+        final ids = await (_db.selectOnly(_db.items)
+              ..addColumns([_db.items.id])
+              ..where(
+                _db.items.listId.equals(listId) &
+                    _db.items.checked.equals(true) &
+                    _db.items.deletedAt.isNull(),
+              ))
+            .map((r) => r.read(_db.items.id)!)
+            .get();
+        if (ids.isEmpty) return const <int>[];
+        await (_db.update(_db.items)..where((i) => i.id.isIn(ids))).write(
+          ItemsCompanion(
+            deletedAt: Value(DateTime.now()),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+        return ids;
+      });
+
+  /// Undo for bulk tombstones ([clearChecked]).
+  Future<void> restoreMany(List<int> ids) => ids.isEmpty
+      ? Future.value()
+      : (_db.update(_db.items)..where((i) => i.id.isIn(ids))).write(
+          ItemsCompanion(
+            deletedAt: const Value(null),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+
+  /// Moves an item to another list, appended at the end (PLAN §6.3
+  /// "move to list").
+  Future<void> moveToList(int itemId, int targetListId) =>
+      _db.transaction(() async {
+        final maxPos = _db.items.position.max();
+        final row = await (_db.selectOnly(_db.items)
+              ..addColumns([maxPos])
+              ..where(_db.items.listId.equals(targetListId)))
+            .getSingle();
+        await (_db.update(_db.items)..where((i) => i.id.equals(itemId)))
+            .write(
+          ItemsCompanion(
+            listId: Value(targetListId),
+            position: Value((row.read(maxPos) ?? -1) + 1),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+      });
+
+  /// Removes a learned entry from autocomplete (tombstone). Adding the
+  /// same name again revives it via _learn.
+  Future<void> forgetSuggestion(int catalogEntryId) =>
+      (_db.update(_db.catalogEntries)
+            ..where((c) => c.id.equals(catalogEntryId)))
           .write(
-        ItemsCompanion(
+        CatalogEntriesCompanion(
           deletedAt: Value(DateTime.now()),
           updatedAt: Value(DateTime.now()),
         ),

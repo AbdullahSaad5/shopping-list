@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tokri/app/router.dart';
 import 'package:tokri/app/theme/app_theme.dart';
+import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/utils/item_parser.dart';
 import 'package:tokri/core/utils/share_codec.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
+import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/features/items/data/category_repository.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
 import 'package:tokri/features/lists/data/list_repository.dart';
@@ -18,22 +20,17 @@ class ImportPreviewScreen extends ConsumerWidget {
 
   final String payload;
 
-  Future<void> _accept(
+  Future<void> _writeInto(
     BuildContext context,
     WidgetRef ref,
     ImportedList decoded,
+    int listId,
   ) async {
-    final lists = ref.read(listRepositoryProvider);
     final items = ref.read(itemRepositoryProvider);
     final categories = await ref.read(categoryRepositoryProvider).all();
     final byName = {for (final c in categories) c.name.toLowerCase(): c.id};
-
-    final listId = await lists.create(
-      name: decoded.name,
-      colorSeed: 0,
-      icon: 'shopping-basket',
-    );
     for (final item in decoded.items) {
+      // Dedupe-on-add makes this a real merge for existing lists.
       await items.add(
         listId,
         ParsedItem(
@@ -50,6 +47,36 @@ class ImportPreviewScreen extends ConsumerWidget {
         pathParameters: {'id': '$listId'},
       );
     }
+  }
+
+  Future<void> _accept(
+    BuildContext context,
+    WidgetRef ref,
+    ImportedList decoded,
+  ) async {
+    final listId = await ref.read(listRepositoryProvider).create(
+          name: decoded.name,
+          colorSeed: 0,
+          icon: 'shopping-basket',
+        );
+    if (context.mounted) await _writeInto(context, ref, decoded, listId);
+  }
+
+  void _merge(BuildContext context, WidgetRef ref, ImportedList decoded) {
+    final lists =
+        ref.read(activeListsProvider).valueOrNull ?? const <ShoppingList>[];
+    MenuSheet.show(
+      context,
+      title: 'Merge into',
+      items: [
+        for (final list in lists)
+          MenuSheetItem(
+            icon: LucideIcons.list,
+            label: list.name,
+            onTap: () => _writeInto(context, ref, decoded, list.id),
+          ),
+      ],
+    );
   }
 
   @override
@@ -106,7 +133,8 @@ class ImportPreviewScreen extends ConsumerWidget {
                   ),
                   leading: const Icon(LucideIcons.circle, size: 18),
                   title: Text(item.name),
-                  subtitle: item.category == null ? null : Text(item.category!),
+                  subtitle:
+                      item.category == null ? null : Text(item.category!),
                   trailing: showQty ? Text('$qty ${item.unit}') : null,
                 );
               },
@@ -119,22 +147,23 @@ class ImportPreviewScreen extends ConsumerWidget {
               Gaps.page,
               Gaps.md,
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.canPop()
-                        ? context.pop()
-                        : context.goNamed(AppRoute.home.name),
-                    child: const Text('Cancel'),
-                  ),
+                FilledButton(
+                  onPressed: () => _accept(context, ref, decoded),
+                  child: const Text('Add as new list'),
                 ),
-                const SizedBox(width: Gaps.sm),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => _accept(context, ref, decoded),
-                    child: const Text('Add as new list'),
-                  ),
+                const SizedBox(height: Gaps.sm),
+                OutlinedButton(
+                  onPressed: () => _merge(context, ref, decoded),
+                  child: const Text('Merge into an existing list…'),
+                ),
+                TextButton(
+                  onPressed: () => context.canPop()
+                      ? context.pop()
+                      : context.goNamed(AppRoute.home.name),
+                  child: const Text('Cancel'),
                 ),
               ],
             ),

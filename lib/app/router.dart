@@ -9,6 +9,7 @@ import 'package:tokri/features/lists/presentation/search_screen.dart';
 import 'package:tokri/features/lists/presentation/templates_screen.dart';
 import 'package:tokri/features/settings/presentation/settings_screen.dart';
 import 'package:tokri/features/trips/presentation/shop_mode_screen.dart';
+import 'package:tokri/features/trips/presentation/trips_screen.dart';
 
 /// Route names, used with `context.goNamed`/`pushNamed` — never raw strings.
 enum AppRoute {
@@ -21,6 +22,7 @@ enum AppRoute {
   search,
   settings,
   import,
+  trips,
 }
 
 /// External `tokri://import?d=...` links Uri-parse with host "import" and an
@@ -86,6 +88,11 @@ GoRouter createRouter({String initialLocation = '/'}) => GoRouter(
           path: '/search',
           name: AppRoute.search.name,
           builder: (context, state) => const SearchScreen(),
+        ),
+        GoRoute(
+          path: '/trips',
+          name: AppRoute.trips.name,
+          builder: (context, state) => const TripsScreen(),
         ),
         GoRoute(
           path: '/settings',

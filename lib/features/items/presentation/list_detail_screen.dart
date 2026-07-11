@@ -117,7 +117,19 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
         MenuSheetItem(
           icon: LucideIcons.eraser,
           label: 'Clear checked',
-          onTap: () => itemsRepo.clearChecked(widget.listId),
+          onTap: () async {
+            final cleared = await itemsRepo.clearChecked(widget.listId);
+            if (mounted && cleared.isNotEmpty) {
+              showToast(
+                context,
+                '${cleared.length} cleared',
+                action: SnackBarAction(
+                  label: 'Undo',
+                  onPressed: () => itemsRepo.restoreMany(cleared),
+                ),
+              );
+            }
+          },
         ),
         MenuSheetItem(
           icon: LucideIcons.layoutTemplate,

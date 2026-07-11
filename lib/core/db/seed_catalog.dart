@@ -171,6 +171,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Aloo bukhara', unit: 'pack', category: 'Spices & Condiments'),
   (name: 'Chicken cubes', unit: 'pack', category: 'Spices & Condiments'),
   (name: 'Chilli garlic sauce', unit: 'pcs', category: 'Spices & Condiments'),
+  (name: 'Chutney', unit: 'pcs', category: 'Spices & Condiments'),
   (name: 'Ginger garlic paste', unit: 'pcs', category: 'Spices & Condiments'),
 
   // Snacks & Biscuits

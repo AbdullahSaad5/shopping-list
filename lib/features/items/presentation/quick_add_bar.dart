@@ -9,6 +9,7 @@ import 'package:tokri/core/flags.dart';
 import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/item_parser.dart';
 import 'package:tokri/core/utils/urdu_aliases.dart';
+import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/core/widgets/toast.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
 
@@ -138,13 +139,43 @@ class _QuickAddBarState extends ConsumerState<QuickAddBar> {
                               )
                           ? urduLabelFor(entry.nameNormalized)
                           : null;
-                      return ActionChip(
-                        label: Text(
-                          urdu == null
-                              ? entry.displayName
-                              : '${entry.displayName} · $urdu',
+                      return GestureDetector(
+                        // Long-press cleans up a bad suggestion (typo
+                        // learned once haunts autocomplete otherwise).
+                        onLongPress: () => MenuSheet.show(
+                          context,
+                          title: entry.displayName,
+                          items: [
+                            MenuSheetItem(
+                              icon: LucideIcons.eyeOff,
+                              label: 'Remove from suggestions',
+                              onTap: () async {
+                                await ref
+                                    .read(itemRepositoryProvider)
+                                    .forgetSuggestion(entry.id);
+                                if (!mounted) return;
+                                setState(() {
+                                  _suggestions = _suggestions
+                                      .where((s) => s.id != entry.id)
+                                      .toList();
+                                });
+                                showToast(
+                                  this.context,
+                                  'Removed. Adding it again brings it '
+                                  'back.',
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        onPressed: () => _submit(entry.displayName),
+                        child: ActionChip(
+                          label: Text(
+                            urdu == null
+                                ? entry.displayName
+                                : '${entry.displayName} · $urdu',
+                          ),
+                          onPressed: () => _submit(entry.displayName),
+                        ),
                       );
                     },
                   ),
