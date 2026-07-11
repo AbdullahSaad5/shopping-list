@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
+import 'package:tokri/core/utils/budget_math.dart';
+import 'package:tokri/core/utils/money_format.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
 import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/features/items/data/category_repository.dart';
@@ -118,6 +120,8 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
       ),
       body: Column(
         children: [
+          if (list != null)
+            _EstBar(list: list, items: itemsAsync.valueOrNull),
           Expanded(
             child: itemsAsync.when(
               loading: () =>
@@ -145,6 +149,80 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
             ),
           ),
           QuickAddBar(listId: widget.listId),
+        ],
+      ),
+    );
+  }
+}
+
+/// Estimated total + budget line under the app bar (PLAN §3 "Budget &
+/// prices"): sum of known prices × qty, count of unpriced items, and the
+/// budget comparison colored amber at 80% / red when over.
+class _EstBar extends StatelessWidget {
+  const _EstBar({required this.list, required this.items});
+
+  final ShoppingList list;
+  final ListItems? items;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = items;
+    if (rows == null || (rows.open.isEmpty && rows.done.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+    final est = estimateTotal([
+      for (final i in [...rows.open, ...rows.done])
+        (priceMinor: i.priceMinor, quantity: i.quantity),
+    ]);
+    final budget = list.budgetMinor;
+    // No prices and no budget = no estimate worth showing; "Est. Rs 0"
+    // would just be noise.
+    if (est.estMinor == 0 && (budget == null || budget <= 0)) {
+      return const SizedBox.shrink();
+    }
+    final status = budgetStatus(estMinor: est.estMinor, budgetMinor: budget);
+
+    final scheme = Theme.of(context).colorScheme;
+    // Fallback for hosts without the app theme (plain-theme widget tests).
+    final tokri = Theme.of(context).extension<TokriColors>();
+    final statusColor = switch (status) {
+      BudgetStatus.over => scheme.error,
+      BudgetStatus.warn => tokri?.warning ?? scheme.tertiary,
+      BudgetStatus.under || BudgetStatus.none => scheme.onSurfaceVariant,
+    };
+
+    final parts = [
+      'Est. ${formatMinor(est.estMinor)}',
+      if (budget != null && budget > 0) 'of ${formatMinor(budget)}',
+      if (est.missingPrices > 0) '· ${est.missingPrices} without prices',
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            parts.join(' '),
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: statusColor,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          if (budget != null && budget > 0) ...[
+            const SizedBox(height: Gaps.xs),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                minHeight: 4,
+                value: (est.estMinor / budget).clamp(0.0, 1.0),
+                color: status == BudgetStatus.under
+                    ? scheme.primary
+                    : statusColor,
+                backgroundColor: scheme.surfaceContainerHighest,
+              ),
+            ),
+          ],
         ],
       ),
     );

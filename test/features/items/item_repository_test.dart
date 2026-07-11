@@ -71,7 +71,9 @@ void main() {
     final hits = await repo.suggest('bro');
     final bread = hits.singleWhere((h) => h.displayName == 'Brown Bread');
     expect(bread.defaultUnit, 'pcs');
-    expect(await repo.suggest('zz'), isEmpty);
+    // 'zz' would substring-match seeded 'pizza base' (M2 ranking), so the
+    // no-match probe uses a bigram absent from the whole catalog.
+    expect(await repo.suggest('xq'), isEmpty);
     expect(await repo.suggest('  '), isEmpty);
   });
 

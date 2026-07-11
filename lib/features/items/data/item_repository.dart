@@ -160,17 +160,23 @@ class ItemRepository {
     }
   }
 
-  /// Prefix autocomplete over the catalog, most-purchased then most recent.
+  /// Autocomplete over the catalog (M2 ranking): prefix matches first, then
+  /// substring matches; within each tier most-purchased then most recent.
   Future<List<CatalogEntry>> suggest(String prefix, {int limit = 8}) {
-    final normalized = normalizeItemName(prefix);
+    final normalized = _escapeLike(normalizeItemName(prefix));
     if (normalized.isEmpty) return Future.value(const []);
     final query = _db.select(_db.catalogEntries)
       ..where(
         (c) =>
             c.deletedAt.isNull() &
-            c.nameNormalized.like('$normalized%'),
+            c.nameNormalized.like('%$normalized%', escapeChar: r'\'),
       )
       ..orderBy([
+        (c) => OrderingTerm(
+              expression:
+                  c.nameNormalized.like('$normalized%', escapeChar: r'\'),
+              mode: OrderingMode.desc,
+            ),
         (c) =>
             OrderingTerm(expression: c.timesPurchased, mode: OrderingMode.desc),
         (c) => OrderingTerm(
@@ -182,6 +188,52 @@ class ItemRepository {
       ..limit(limit);
     return query.get();
   }
+
+  /// Idle chips for an empty, focused quick-add bar (M2): the most frequent
+  /// catalog entries the user has real history with (purchased, or learned
+  /// from their own adds — untouched seed rows stay out), excluding names
+  /// already on this list.
+  Future<List<CatalogEntry>> topSuggestions(
+    int listId, {
+    int limit = 10,
+  }) async {
+    final onList = await (_db.selectOnly(_db.items)
+          ..addColumns([_db.items.name])
+          ..where(
+            _db.items.listId.equals(listId) & _db.items.deletedAt.isNull(),
+          ))
+        .map((r) => normalizeItemName(r.read(_db.items.name)!))
+        .get();
+    final taken = onList.toSet();
+
+    final query = _db.select(_db.catalogEntries)
+      ..where(
+        (c) =>
+            c.deletedAt.isNull() &
+            (c.timesPurchased.isBiggerThanValue(0) |
+                c.isSeeded.equals(false)),
+      )
+      ..orderBy([
+        (c) =>
+            OrderingTerm(expression: c.timesPurchased, mode: OrderingMode.desc),
+        (c) => OrderingTerm(
+              expression: c.lastPurchasedAt,
+              mode: OrderingMode.desc,
+            ),
+        (c) => OrderingTerm(expression: c.updatedAt, mode: OrderingMode.desc),
+        (c) => OrderingTerm(expression: c.nameNormalized),
+      ])
+      ..limit(limit + taken.length);
+    final rows = await query.get();
+    return rows
+        .where((c) => !taken.contains(c.nameNormalized))
+        .take(limit)
+        .toList();
+  }
+
+  /// SQLite LIKE wildcards in user input must match literally.
+  String _escapeLike(String s) =>
+      s.replaceAll(r'\', r'\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
 
   Future<void> setChecked(int id, {required bool checked}) =>
       (_db.update(_db.items)..where((i) => i.id.equals(id))).write(
