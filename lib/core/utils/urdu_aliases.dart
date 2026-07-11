@@ -11,6 +11,9 @@
 /// kSeedCatalog.
 library;
 
+import 'package:tokri/core/db/seed_catalog.dart';
+import 'package:tokri/core/utils/item_parser.dart';
+
 const Map<String, List<String>> kUrduAliases = {
   // Dairy & Eggs
   'doodh': ['milk'], 'dudh': ['milk'], 'dood': ['milk'],
@@ -385,3 +388,20 @@ const Map<String, String> kUrduDisplayNames = {
 /// what everyone says anyway.
 String? urduLabelFor(String nameNormalized) =>
     kUrduDisplayNames[nameNormalized];
+
+/// Seed display names by normalized name, for alias → English lookups.
+final Map<String, String> _seedDisplayByNormalized = {
+  for (final entry in kSeedCatalog) normalizeItemName(entry.name): entry.name,
+};
+
+/// The "other language" label for a list item (Saad, 2026-07-11): an item
+/// named in English gets its Roman-Urdu name ("Milk" → "Doodh"); an item
+/// the user typed in Urdu gets the English seed name ("doodh" → "Milk").
+/// Null when there's nothing meaningfully different to show.
+String? counterpartLabel(String nameNormalized) {
+  final urdu = kUrduDisplayNames[nameNormalized];
+  if (urdu != null) return urdu;
+  final canonicals = canonicalsFor(nameNormalized);
+  if (canonicals.isEmpty) return null;
+  return _seedDisplayByNormalized[canonicals.first];
+}

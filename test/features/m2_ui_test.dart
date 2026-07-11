@@ -133,6 +133,26 @@ void main() {
     });
   });
 
+  group('bilingual tiles', () {
+    testWidgets('list tile shows the other language next to the name',
+        (tester) async {
+      final listId = await makeList(tester);
+      await real(tester, () async {
+        final repo = ItemRepository(db);
+        await repo.add(listId, const ParsedItem(name: 'Milk'));
+        await repo.add(listId, const ParsedItem(name: 'doodh'));
+      });
+
+      await tester.pumpWidget(wrap(ListDetailScreen(listId: listId)));
+      await tester.pumpAndSettle();
+
+      // English item gets the Urdu label; Urdu item gets the English one.
+      expect(find.text('\u00b7 Doodh'), findsOneWidget);
+      expect(find.text('\u00b7 Milk'), findsOneWidget);
+      await unmount(tester);
+    });
+  });
+
   group('bulk paste', () {
     testWidgets('multiline text parses into one item per line',
         (tester) async {

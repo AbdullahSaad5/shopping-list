@@ -8,7 +8,9 @@ import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/budget_math.dart';
+import 'package:tokri/core/utils/item_parser.dart';
 import 'package:tokri/core/utils/money_format.dart';
+import 'package:tokri/core/utils/urdu_aliases.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
 import 'package:tokri/features/items/data/category_repository.dart';
 import 'package:tokri/features/items/data/item_repository.dart';
@@ -230,7 +232,7 @@ class _ShopList extends StatelessWidget {
   }
 }
 
-class _ShopTile extends StatelessWidget {
+class _ShopTile extends ConsumerWidget {
   const _ShopTile({
     required this.item,
     required this.onCheck,
@@ -242,8 +244,13 @@ class _ShopTile extends StatelessWidget {
   final ValueChanged<Item> onPrice;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
+    final counterpart = ref.watch(
+      settingsProvider.select((s) => s.showUrduNames),
+    )
+        ? counterpartLabel(normalizeItemName(item.name))
+        : null;
     final qty = item.quantity == item.quantity.roundToDouble()
         ? item.quantity.round().toString()
         : item.quantity.toString();
@@ -269,7 +276,11 @@ class _ShopTile extends StatelessWidget {
             const SizedBox(width: Gaps.sm),
             Expanded(
               child: Text(
-                showQty ? '${item.name} · $qty ${item.unit}' : item.name,
+                [
+                  item.name,
+                  if (counterpart != null) counterpart,
+                  if (showQty) '$qty ${item.unit}',
+                ].join(' \u00b7 '),
                 style: text.bodyLarge?.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/settings/settings.dart';
+import 'package:tokri/core/utils/item_parser.dart';
 import 'package:tokri/core/utils/money_format.dart';
+import 'package:tokri/core/utils/urdu_aliases.dart';
 
 /// One item row: animated checkbox, name + quantity/price chips, swipe left
 /// to delete (undo handled by the caller), tap to edit.
@@ -35,6 +37,13 @@ class ItemTile extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final showQty = item.quantity != 1 || item.unit != 'pcs';
+    // "Milk · Doodh" / "doodh · Milk" — the other language's name, so
+    // whoever reads the list understands every line (toggle in Settings).
+    final counterpart = ref.watch(
+      settingsProvider.select((s) => s.showUrduNames),
+    )
+        ? counterpartLabel(normalizeItemName(item.name))
+        : null;
 
     return Dismissible(
       key: ValueKey('dismiss-${item.id}'),
@@ -100,6 +109,19 @@ class ItemTile extends ConsumerWidget {
                             ),
                           ),
                         ),
+                        if (counterpart != null) ...[
+                          const SizedBox(width: Gaps.xs),
+                          Flexible(
+                            child: Text(
+                              '\u00b7 $counterpart',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.bodyMedium?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
                         if (showQty) ...[
                           const SizedBox(width: Gaps.sm),
                           _Chip(label: _qtyLabel),

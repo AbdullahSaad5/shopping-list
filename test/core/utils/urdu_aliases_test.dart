@@ -177,6 +177,22 @@ void main() {
       }
     });
 
+    test('counterpartLabel works both directions for list tiles', () {
+      // English item → Urdu label.
+      expect(counterpartLabel('milk'), 'Doodh');
+      expect(counterpartLabel('eggs'), 'Anday');
+      // Urdu/alias item → English seed display name.
+      expect(counterpartLabel('doodh'), 'Milk');
+      expect(counterpartLabel('anday'), 'Eggs');
+      expect(counterpartLabel('chana daal'), 'Daal chana');
+      expect(counterpartLabel('sawaiyan'), 'Vermicelli');
+      expect(counterpartLabel('brufen'), 'Ibuprofen');
+      // Nothing to add: unknown words and Urdu-primary rows.
+      expect(counterpartLabel('mystery thing'), isNull);
+      expect(counterpartLabel('lauki'), isNull);
+      expect(counterpartLabel('pizza base'), isNull);
+    });
+
     test('urduLabelFor: common pairs, null when same-enough', () {
       expect(urduLabelFor('milk'), 'Doodh');
       expect(urduLabelFor('eggs'), 'Anday');

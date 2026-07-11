@@ -64,7 +64,8 @@ void main() {
 
     expect(find.text('Fruits & Vegetables'), findsOneWidget);
     expect(find.text('Dairy & Eggs'), findsOneWidget);
-    expect(find.text('Milk'), findsOneWidget);
+    // Shop tiles read "Milk · Doodh" (bilingual labels).
+    expect(find.textContaining('Milk'), findsOneWidget);
     expect(find.byType(Checkbox), findsNWidgets(2));
     // Finish disabled until something is in the cart.
     expect(
