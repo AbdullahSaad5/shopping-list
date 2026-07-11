@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
+import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/budget_math.dart';
 import 'package:tokri/core/utils/money_format.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
@@ -35,8 +37,17 @@ class _ShopModeScreenState extends ConsumerState<ShopModeScreen> {
   void initState() {
     super.initState();
     _startedAt = DateTime.now();
-    // Best-effort: hosts without the plugin (widget tests) just skip it.
-    unawaited(WakelockPlus.enable().catchError((_) {}));
+    if (ref.read(settingsProvider).wakelockInShop) {
+      // Best-effort: hosts without the plugin (widget tests) just skip it.
+      unawaited(WakelockPlus.enable().catchError((_) {}));
+    }
+  }
+
+  Future<void> _check(Item item) async {
+    if (ref.read(settingsProvider).haptics) {
+      unawaited(HapticFeedback.selectionClick());
+    }
+    await ref.read(itemRepositoryProvider).setChecked(item.id, checked: true);
   }
 
   @override
@@ -75,6 +86,8 @@ class _ShopModeScreenState extends ConsumerState<ShopModeScreen> {
       estMinor: spent.estMinor,
       budgetMinor: budget,
     );
+    final symbol =
+        ref.watch(settingsProvider.select((s) => s.currencySymbol));
     final scheme = Theme.of(context).colorScheme;
     final tokri = Theme.of(context).extension<TokriColors>();
     final totalColor = switch (status) {
@@ -91,8 +104,8 @@ class _ShopModeScreenState extends ConsumerState<ShopModeScreen> {
             Text(list?.name ?? '', style: const TextStyle(fontSize: 18)),
             Text(
               budget != null && budget > 0
-                  ? '${formatMinor(spent.estMinor)} / ${formatMinor(budget)}'
-                  : formatMinor(spent.estMinor),
+                  ? '${formatMinor(spent.estMinor, symbol: symbol)} / ${formatMinor(budget, symbol: symbol)}'
+                  : formatMinor(spent.estMinor, symbol: symbol),
               style: Theme.of(context)
                   .textTheme
                   .labelLarge
@@ -115,9 +128,7 @@ class _ShopModeScreenState extends ConsumerState<ShopModeScreen> {
               : _ShopList(
                   items: items,
                   categories: categories,
-                  onCheck: (item) => ref
-                      .read(itemRepositoryProvider)
-                      .setChecked(item.id, checked: true),
+                  onCheck: _check,
                   onPrice: (item) =>
                       PricePadSheet.show(context, item: item),
                 ),

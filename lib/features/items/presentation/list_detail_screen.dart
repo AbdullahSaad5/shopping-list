@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tokri/app/router.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
+import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/budget_math.dart';
 import 'package:tokri/core/utils/money_format.dart';
+import 'package:tokri/core/utils/share_codec.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
 import 'package:tokri/core/widgets/menu_sheet.dart';
 import 'package:tokri/features/items/data/category_repository.dart';
@@ -70,8 +75,35 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
     );
   }
 
+  /// Current rows as the share codec's shape, open before done.
+  List<ShareItem> _shareItems(ListItems rows, Map<int, Category> categories) =>
+      [
+        for (final item in [...rows.open, ...rows.done])
+          ShareItem(
+            name: item.name,
+            quantity: item.quantity,
+            unit: item.unit,
+            category: item.categoryId == null
+                ? null
+                : categories[item.categoryId]?.name,
+            checked: item.checked,
+          ),
+      ];
+
   void _listMenu(ShoppingList list) {
     final itemsRepo = ref.read(itemRepositoryProvider);
+    final listsRepo = ref.read(listRepositoryProvider);
+    final rows = ref.read(
+      listItemsProvider((
+        listId: widget.listId,
+        sort: ListSortMode.category,
+      )),
+    );
+    final categories = ref.read(categoryMapProvider);
+    final items = rows.valueOrNull == null
+        ? const <ShareItem>[]
+        : _shareItems(rows.valueOrNull!, categories);
+
     MenuSheet.show(
       context,
       title: list.name,
@@ -86,7 +118,92 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
           label: 'Clear checked',
           onTap: () => itemsRepo.clearChecked(widget.listId),
         ),
+        MenuSheetItem(
+          icon: LucideIcons.layoutTemplate,
+          label: 'Save as template',
+          subtitle: 'Reuse this list from Templates',
+          onTap: () async {
+            await listsRepo.saveAsTemplate(widget.listId);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Saved to Templates.')),
+              );
+            }
+          },
+        ),
+        if (items.isNotEmpty) ...[
+          MenuSheetItem(
+            icon: LucideIcons.copy,
+            label: 'Copy as text',
+            onTap: () async {
+              await Clipboard.setData(
+                ClipboardData(text: shareText(list.name, items)),
+              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Copied.')),
+                );
+              }
+            },
+          ),
+          MenuSheetItem(
+            icon: LucideIcons.share2,
+            label: 'Share…',
+            onTap: () => SharePlus.instance.share(
+              ShareParams(text: shareText(list.name, items)),
+            ),
+          ),
+          MenuSheetItem(
+            icon: LucideIcons.qrCode,
+            label: 'QR code',
+            subtitle: 'Scan with another phone running Tokri',
+            onTap: () => _showQr(list.name, items),
+          ),
+        ],
       ],
+    );
+  }
+
+  void _showQr(String name, List<ShareItem> items) {
+    final String data;
+    try {
+      data = buildImportUri(name, items).toString();
+    } on ImportException catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
+      return;
+    }
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(Gaps.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(name, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: Gaps.md),
+              // QR must stay scannable in dark mode: pin a light tile.
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ColoredBox(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(Gaps.md),
+                    child: QrImageView(data: data, size: 240),
+                  ),
+                ),
+              ),
+              const SizedBox(height: Gaps.sm),
+              Text(
+                'Scanning opens an import preview in Tokri.',
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -134,7 +251,13 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
       body: Column(
         children: [
           if (list != null)
-            _EstBar(list: list, items: itemsAsync.valueOrNull),
+            _EstBar(
+              list: list,
+              items: itemsAsync.valueOrNull,
+              symbol: ref.watch(
+                settingsProvider.select((s) => s.currencySymbol),
+              ),
+            ),
           Expanded(
             child: itemsAsync.when(
               loading: () =>
@@ -172,10 +295,15 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
 /// prices"): sum of known prices × qty, count of unpriced items, and the
 /// budget comparison colored amber at 80% / red when over.
 class _EstBar extends StatelessWidget {
-  const _EstBar({required this.list, required this.items});
+  const _EstBar({
+    required this.list,
+    required this.items,
+    required this.symbol,
+  });
 
   final ShoppingList list;
   final ListItems? items;
+  final String symbol;
 
   @override
   Widget build(BuildContext context) {
@@ -205,8 +333,9 @@ class _EstBar extends StatelessWidget {
     };
 
     final parts = [
-      'Est. ${formatMinor(est.estMinor)}',
-      if (budget != null && budget > 0) 'of ${formatMinor(budget)}',
+      'Est. ${formatMinor(est.estMinor, symbol: symbol)}',
+      if (budget != null && budget > 0)
+        'of ${formatMinor(budget, symbol: symbol)}',
       if (est.missingPrices > 0) '· ${est.missingPrices} without prices',
     ];
 

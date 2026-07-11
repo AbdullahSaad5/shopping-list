@@ -217,6 +217,69 @@ class ListRepository {
           updatedAt: Value(DateTime.now()),
         ),
       );
+
+  /// Saved templates, newest first (PLAN §6.5).
+  Stream<List<ShoppingList>> watchTemplates() {
+    final query = _db.select(_db.shoppingLists)
+      ..where((l) => l.isTemplate.equals(true) & l.deletedAt.isNull())
+      ..orderBy([
+        (l) => OrderingTerm(expression: l.updatedAt, mode: OrderingMode.desc),
+      ]);
+    return query.watch();
+  }
+
+  /// Freezes [listId] into a template: copies the list row and its live
+  /// items with checked state reset. The source list is untouched.
+  Future<int> saveAsTemplate(int listId, {String? name}) =>
+      _clone(listId, asTemplate: true, name: name);
+
+  /// Creates a fresh active list from a template; items start unchecked.
+  Future<int> instantiateTemplate(int templateId, {String? name}) =>
+      _clone(templateId, asTemplate: false, name: name);
+
+  Future<int> _clone(int fromId, {required bool asTemplate, String? name}) {
+    return _db.transaction(() async {
+      final src = await (_db.select(_db.shoppingLists)
+            ..where((l) => l.id.equals(fromId)))
+          .getSingle();
+      final maxPos = _db.shoppingLists.position.max();
+      final row = await (_db.selectOnly(_db.shoppingLists)
+            ..addColumns([maxPos]))
+          .getSingle();
+      final newId = await _db.into(_db.shoppingLists).insert(
+            ShoppingListsCompanion.insert(
+              name: name ?? src.name,
+              colorSeed: src.colorSeed,
+              icon: src.icon,
+              budgetMinor: Value(src.budgetMinor),
+              position: (row.read(maxPos) ?? -1) + 1,
+              isTemplate: Value(asTemplate),
+            ),
+          );
+      final srcItems = await (_db.select(_db.items)
+            ..where((i) => i.listId.equals(fromId) & i.deletedAt.isNull()))
+          .get();
+      await _db.batch((batch) {
+        for (final item in srcItems) {
+          batch.insert(
+            _db.items,
+            ItemsCompanion.insert(
+              listId: newId,
+              name: item.name,
+              quantity: Value(item.quantity),
+              unit: Value(item.unit),
+              priceMinor: Value(item.priceMinor),
+              note: Value(item.note),
+              categoryId: Value(item.categoryId),
+              priority: Value(item.priority),
+              position: item.position,
+            ),
+          );
+        }
+      });
+      return newId;
+    });
+  }
 }
 
 final listRepositoryProvider = Provider<ListRepository>(

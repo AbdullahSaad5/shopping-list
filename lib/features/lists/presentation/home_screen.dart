@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tokri/app/theme/app_theme.dart';
+import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/money_format.dart';
 import 'package:tokri/core/widgets/app_icons.dart';
 import 'package:tokri/core/widgets/empty_state.dart';
@@ -26,11 +27,22 @@ class HomeScreen extends ConsumerWidget {
         title: Text(l10n.homeTitle),
         actions: [
           IconButton(
+            tooltip: 'Search',
+            icon: const Icon(LucideIcons.search, size: 20),
+            onPressed: () => context.push('/search'),
+          ),
+          IconButton(
             tooltip: 'More',
             icon: const Icon(LucideIcons.moreVertical, size: 20),
             onPressed: () => MenuSheet.show(
               context,
               items: [
+                MenuSheetItem(
+                  icon: LucideIcons.layoutTemplate,
+                  label: 'Templates',
+                  subtitle: 'Start a list from a saved one',
+                  onTap: () => context.push('/templates'),
+                ),
                 MenuSheetItem(
                   icon: LucideIcons.tags,
                   label: 'Categories',
@@ -41,6 +53,11 @@ class HomeScreen extends ConsumerWidget {
                   icon: LucideIcons.archive,
                   label: 'Archived lists',
                   onTap: () => context.push('/archived'),
+                ),
+                MenuSheetItem(
+                  icon: LucideIcons.settings,
+                  label: 'Settings',
+                  onTap: () => context.push('/settings'),
                 ),
               ],
             ),
@@ -204,7 +221,13 @@ class _ListCard extends ConsumerWidget {
                           : [
                               '${stats.checkedItems}/${stats.totalItems} done',
                               if (stats.estimatedTotalMinor != null)
-                                '~${formatMinor(stats.estimatedTotalMinor!)}',
+                                '~${formatMinor(
+                                  stats.estimatedTotalMinor!,
+                                  symbol: ref.watch(
+                                    settingsProvider
+                                        .select((s) => s.currencySymbol),
+                                  ),
+                                )}',
                             ].join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

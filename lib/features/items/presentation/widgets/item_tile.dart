@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
+import 'package:tokri/core/settings/settings.dart';
 import 'package:tokri/core/utils/money_format.dart';
 
 /// One item row: animated checkbox, name + quantity/price chips, swipe left
 /// to delete (undo handled by the caller), tap to edit.
-class ItemTile extends StatelessWidget {
+class ItemTile extends ConsumerWidget {
   const ItemTile({
     required this.item,
     required this.onCheck,
@@ -29,7 +31,7 @@ class ItemTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final showQty = item.quantity != 1 || item.unit != 'pcs';
@@ -97,7 +99,15 @@ class ItemTile extends StatelessWidget {
                         ],
                         if (item.priceMinor != null) ...[
                           const SizedBox(width: Gaps.xs),
-                          _Chip(label: formatMinor(item.priceMinor!)),
+                          _Chip(
+                            label: formatMinor(
+                              item.priceMinor!,
+                              symbol: ref.watch(
+                                settingsProvider
+                                    .select((s) => s.currencySymbol),
+                              ),
+                            ),
+                          ),
                         ],
                       ],
                     ),

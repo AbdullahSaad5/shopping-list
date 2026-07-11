@@ -16,6 +16,14 @@ class CategoryRepository {
     return query.watch();
   }
 
+  /// One-shot read for non-reactive callers (import mapping etc.).
+  Future<List<Category>> all() {
+    final query = _db.select(_db.categories)
+      ..where((c) => c.deletedAt.isNull())
+      ..orderBy([(c) => OrderingTerm(expression: c.position)]);
+    return query.get();
+  }
+
   Future<int> create({
     required String name,
     required String icon,
