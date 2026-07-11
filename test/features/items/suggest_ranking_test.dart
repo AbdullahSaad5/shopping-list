@@ -34,16 +34,18 @@ void main() {
 
   group('suggest ranking (M2)', () {
     test('prefix matches rank above substring matches', () async {
-      await insertCatalog('Karela');
+      // 'quin' is outside both the seed catalog and the alias table
+      // ('ka' would drown in alias fan-out).
+      await insertCatalog('Quinoa');
       // Substring hit with a much higher purchase count still loses to
       // the prefix hit.
-      await insertCatalog('Sarson ka saag', timesPurchased: 50);
+      await insertCatalog('Red quinoa', timesPurchased: 50);
 
-      final hits = await repo.suggest('ka');
+      final hits = await repo.suggest('quin');
       final names = hits.map((h) => h.displayName).toList();
       expect(
-        names.indexOf('Karela'),
-        lessThan(names.indexOf('Sarson ka saag')),
+        names.indexOf('Quinoa'),
+        lessThan(names.indexOf('Red quinoa')),
       );
     });
 

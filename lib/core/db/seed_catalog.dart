@@ -45,6 +45,21 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Radish', unit: 'kg', category: 'Fruits & Vegetables'),
   (name: 'Turnip', unit: 'kg', category: 'Fruits & Vegetables'),
   (name: 'Beetroot', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Lauki', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Tori', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Arvi', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Methi', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Saag', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Shakarkandi', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Makai', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Amrood', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Tarbooz', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Kharbooza', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Nashpati', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Papita', unit: 'pcs', category: 'Fruits & Vegetables'),
+  (name: 'Chikoo', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Strawberries', unit: 'kg', category: 'Fruits & Vegetables'),
+  (name: 'Lettuce', unit: 'pcs', category: 'Fruits & Vegetables'),
 
   // Bakery
   (name: 'Bread', unit: 'pcs', category: 'Bakery'),
@@ -65,6 +80,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Cheese slices', unit: 'pack', category: 'Dairy & Eggs'),
   (name: 'Cream', unit: 'pack', category: 'Dairy & Eggs'),
   (name: 'Desi ghee', unit: 'kg', category: 'Dairy & Eggs'),
+  (name: 'Banaspati ghee', unit: 'kg', category: 'Dairy & Eggs'),
   (name: 'Milk powder', unit: 'pack', category: 'Dairy & Eggs'),
   (name: 'Condensed milk', unit: 'pcs', category: 'Dairy & Eggs'),
   (name: 'Lassi', unit: 'L', category: 'Dairy & Eggs'),
@@ -78,6 +94,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Qeema', unit: 'kg', category: 'Meat & Fish'),
   (name: 'Fish', unit: 'kg', category: 'Meat & Fish'),
   (name: 'Prawns', unit: 'kg', category: 'Meat & Fish'),
+  (name: 'Kaleji', unit: 'kg', category: 'Meat & Fish'),
 
   // Rice, Flour & Grains
   (name: 'Basmati rice', unit: 'kg', category: 'Rice, Flour & Grains'),
@@ -125,12 +142,22 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Honey', unit: 'pcs', category: 'Spices & Condiments'),
   (name: 'Tamarind', unit: 'pack', category: 'Spices & Condiments'),
   (name: 'Gur', unit: 'kg', category: 'Spices & Condiments'),
+  (name: 'Biryani masala', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Karahi masala', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Nihari masala', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Ajwain', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Saunf', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Kalonji', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Methi dana', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Custard powder', unit: 'pack', category: 'Spices & Condiments'),
+  (name: 'Jelly', unit: 'pack', category: 'Spices & Condiments'),
 
   // Snacks & Biscuits
   (name: 'Biscuits', unit: 'pack', category: 'Snacks & Biscuits'),
   (name: 'Cookies', unit: 'pack', category: 'Snacks & Biscuits'),
   (name: 'Chips', unit: 'pack', category: 'Snacks & Biscuits'),
   (name: 'Nimko', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Papar', unit: 'pack', category: 'Snacks & Biscuits'),
   (name: 'Chocolate', unit: 'pcs', category: 'Snacks & Biscuits'),
   (name: 'Popcorn', unit: 'pack', category: 'Snacks & Biscuits'),
   (name: 'Cake rusk', unit: 'pack', category: 'Snacks & Biscuits'),
@@ -138,6 +165,8 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Almonds', unit: 'kg', category: 'Snacks & Biscuits'),
   (name: 'Cashews', unit: 'kg', category: 'Snacks & Biscuits'),
   (name: 'Raisins', unit: 'pack', category: 'Snacks & Biscuits'),
+  (name: 'Walnuts', unit: 'kg', category: 'Snacks & Biscuits'),
+  (name: 'Pistachios', unit: 'kg', category: 'Snacks & Biscuits'),
 
   // Beverages
   (name: 'Tea', unit: 'pack', category: 'Beverages'),
@@ -177,6 +206,9 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Air freshener', unit: 'pcs', category: 'Household & Cleaning'),
   (name: 'Batteries', unit: 'pack', category: 'Household & Cleaning'),
   (name: 'Light bulb', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Jharoo', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Mop', unit: 'pcs', category: 'Household & Cleaning'),
+  (name: 'Toilet paper', unit: 'pack', category: 'Household & Cleaning'),
 
   // Personal Care
   (name: 'Shampoo', unit: 'pcs', category: 'Personal Care'),
@@ -192,6 +224,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Hair oil', unit: 'pcs', category: 'Personal Care'),
   (name: 'Cotton buds', unit: 'pack', category: 'Personal Care'),
   (name: 'Sunscreen', unit: 'pcs', category: 'Personal Care'),
+  (name: 'Comb', unit: 'pcs', category: 'Personal Care'),
 
   // Baby
   (name: 'Diapers', unit: 'pack', category: 'Baby'),
@@ -200,6 +233,7 @@ const List<SeedCatalogEntry> kSeedCatalog = [
   (name: 'Baby lotion', unit: 'pcs', category: 'Baby'),
   (name: 'Baby shampoo', unit: 'pcs', category: 'Baby'),
   (name: 'Baby food', unit: 'pcs', category: 'Baby'),
+  (name: 'Feeder', unit: 'pcs', category: 'Baby'),
 
   // Pharmacy
   (name: 'Paracetamol', unit: 'pack', category: 'Pharmacy'),

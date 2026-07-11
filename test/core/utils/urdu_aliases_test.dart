@@ -62,6 +62,81 @@ void main() {
       expect(canonicalsFor('quinoa'), isEmpty);
       expect(canonicalsFor(''), isEmpty);
     });
+
+    test('reversed daal word order works — people type "chana daal"', () {
+      expect(canonicalsFor('chana daal'), ['daal chana']);
+      expect(canonicalsFor('masoor daal'), ['daal masoor']);
+      expect(canonicalsFor('moong daal'), ['daal moong']);
+      expect(canonicalsFor('mash daal'), ['daal mash']);
+      expect(canonicalsFor('mash ki daal'), ['daal mash']);
+      expect(canonicalsFor('urad daal'), ['daal mash']);
+    });
+
+    test('dry fruits map to their seeded rows', () {
+      expect(canonicalsFor('badam'), ['almonds']);
+      expect(canonicalsFor('kaju'), ['cashews']);
+      expect(canonicalsFor('kishmish'), ['raisins']);
+      expect(canonicalsFor('moongphali'), ['peanuts']);
+      expect(canonicalsFor('mumphali'), ['peanuts']);
+      expect(canonicalsFor('akhrot'), ['walnuts']);
+      expect(canonicalsFor('pista'), ['pistachios']);
+    });
+
+    test('English words reach the Urdu-primary produce rows', () {
+      expect(canonicalsFor('guava'), ['amrood']);
+      expect(canonicalsFor('watermelon'), ['tarbooz']);
+      expect(canonicalsFor('melon'), ['kharbooza']);
+      expect(canonicalsFor('pear'), ['nashpati']);
+      expect(canonicalsFor('papaya'), ['papita']);
+      expect(canonicalsFor('bottle gourd'), ['lauki']);
+      expect(canonicalsFor('ridge gourd'), ['tori']);
+      expect(canonicalsFor('taro'), ['arvi']);
+      expect(canonicalsFor('sweet potato'), ['shakarkandi']);
+      expect(canonicalsFor('fenugreek'), ['methi']);
+      expect(canonicalsFor('corn'), ['makai']);
+      expect(canonicalsFor('bhutta'), ['makai']);
+      expect(canonicalsFor('broom'), ['jharoo']);
+    });
+
+    test('household brand-generics and spelling extras', () {
+      expect(canonicalsFor('dettol'), ['antiseptic liquid']);
+      expect(canonicalsFor('baisan'), ['besan']);
+      expect(canonicalsFor('chai ki patti'), ['tea']);
+    });
+
+    test('PK brand-generics people actually say', () {
+      expect(canonicalsFor('pampers'), ['diapers']);
+      expect(canonicalsFor('panadol'), ['paracetamol']);
+      expect(canonicalsFor('colgate'), ['toothpaste']);
+      expect(canonicalsFor('dalda'), ['banaspati ghee']);
+      expect(canonicalsFor('surf'), ['laundry detergent']);
+      expect(canonicalsFor('harpic'), ['toilet cleaner']);
+      expect(canonicalsFor('vim'), ['dishwashing liquid']);
+      expect(canonicalsFor('phenyl'), ['floor cleaner']);
+      expect(canonicalsFor('mortein'), ['mosquito repellent']);
+    });
+
+    test('everyday phrases and more variants', () {
+      expect(canonicalsFor('kali daal'), ['daal mash']);
+      expect(canonicalsFor('adrak lehsun'), containsAll(['ginger', 'garlic']));
+      expect(canonicalsFor('thoom'), ['garlic']);
+      expect(canonicalsFor('gaye ka gosht'), ['beef']);
+      expect(canonicalsFor('chuhara'), ['dates']);
+      expect(canonicalsFor('kaleji'), isEmpty,
+          reason: 'kaleji is a seed row itself, direct match handles it');
+      expect(canonicalsFor('liver'), ['kaleji']);
+      expect(canonicalsFor('washing powder'), ['laundry detergent']);
+      expect(canonicalsFor('pocha'), ['mop']);
+      expect(canonicalsFor('kanghi'), ['comb']);
+      expect(canonicalsFor('cold drink'), ['soft drink']);
+      expect(canonicalsFor('papad'), ['papar']);
+      expect(canonicalsFor('nan'), ['naan']);
+      expect(canonicalsFor('zaitoon ka tel'), ['olive oil']);
+    });
+
+    test('the table is genuinely big now', () {
+      expect(kUrduAliases.length, greaterThanOrEqualTo(280));
+    });
   });
 
   group('aliasCanonicalsForPrefix', () {
