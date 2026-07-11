@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tokri/app/router.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/settings/settings.dart';
+import 'package:tokri/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:tokri/l10n/generated/app_localizations.dart';
 
 Future<void> main() async {
@@ -60,6 +61,9 @@ class _TokriAppState extends ConsumerState<TokriApp> {
     return MaterialApp.router(
       builder: (context, child) {
         final brightness = Theme.of(context).brightness;
+        final onboarded = ref.watch(
+          settingsProvider.select((s) => s.onboardingComplete),
+        );
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
@@ -73,7 +77,21 @@ class _TokriAppState extends ConsumerState<TokriApp> {
                 ? Brightness.light
                 : Brightness.dark,
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: Stack(
+            children: [
+              child ?? const SizedBox.shrink(),
+              // First-run gate, ledgr pattern: its own Navigator so
+              // sheets and text fields have an Overlay in scope.
+              if (!onboarded)
+                Positioned.fill(
+                  child: Navigator(
+                    onGenerateRoute: (_) => MaterialPageRoute<void>(
+                      builder: (_) => const OnboardingScreen(),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         );
       },
       onGenerateTitle: (context) => AppL10n.of(context).appName,

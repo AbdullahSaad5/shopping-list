@@ -21,6 +21,7 @@ class AppSettings {
     this.haptics = true,
     this.wakelockInShop = true,
     this.showUrduNames = true,
+    this.onboardingComplete = false,
     this.defaultListId,
   });
 
@@ -35,6 +36,9 @@ class AppSettings {
   /// Suggestion chips read "Milk · Doodh" when on.
   final bool showUrduNames;
 
+  /// First-run welcome finished (ledgr pattern: gate overlay in the shell).
+  final bool onboardingComplete;
+
   /// Opens this list on launch instead of home when set.
   final int? defaultListId;
 
@@ -45,6 +49,7 @@ class AppSettings {
     bool? haptics,
     bool? wakelockInShop,
     bool? showUrduNames,
+    bool? onboardingComplete,
     int? Function()? defaultListId,
   }) =>
       AppSettings(
@@ -54,6 +59,7 @@ class AppSettings {
         haptics: haptics ?? this.haptics,
         wakelockInShop: wakelockInShop ?? this.wakelockInShop,
         showUrduNames: showUrduNames ?? this.showUrduNames,
+        onboardingComplete: onboardingComplete ?? this.onboardingComplete,
         defaultListId:
             defaultListId == null ? this.defaultListId : defaultListId(),
       );
@@ -74,6 +80,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   static const _kWakelock = 'wakelockInShop';
   static const _kDefaultList = 'defaultListId';
   static const _kUrduNames = 'showUrduNames';
+  static const _kOnboarding = 'onboardingComplete';
 
   static AppSettings _load(SharedPreferences prefs) => AppSettings(
         themeMode: ThemeMode.values.asNameMap()[prefs.getString(_kTheme)] ??
@@ -83,6 +90,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         haptics: prefs.getBool(_kHaptics) ?? true,
         wakelockInShop: prefs.getBool(_kWakelock) ?? true,
         showUrduNames: prefs.getBool(_kUrduNames) ?? true,
+        onboardingComplete: prefs.getBool(_kOnboarding) ?? false,
         defaultListId: prefs.getInt(_kDefaultList),
       );
 
@@ -114,6 +122,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setShowUrduNames({required bool enabled}) async {
     await _prefs?.setBool(_kUrduNames, enabled);
     state = state.copyWith(showUrduNames: enabled);
+  }
+
+  Future<void> setOnboardingComplete() async {
+    await _prefs?.setBool(_kOnboarding, true);
+    state = state.copyWith(onboardingComplete: true);
   }
 
   Future<void> setDefaultListId(int? id) async {
