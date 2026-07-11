@@ -41,5 +41,12 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Android 11+ package visibility: lets canLaunchUrl resolve the
+             ledgr:// scheme for the trip-summary "Log in Ledgr" button
+             (ticket #14). No other visibility, no network permission. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="ledgr"/>
+        </intent>
     </queries>
 </manifest>

@@ -49,6 +49,8 @@ dependencies:
   meta: ^1.18.0
   lucide_icons_flutter: ^3.1.14+2
   flutter_displaymode: ^0.7.0
+  wakelock_plus: ^1.6.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

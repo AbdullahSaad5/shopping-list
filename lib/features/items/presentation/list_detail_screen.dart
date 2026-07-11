@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:tokri/app/router.dart';
 import 'package:tokri/app/theme/app_theme.dart';
 import 'package:tokri/core/db/database.dart';
 import 'package:tokri/core/utils/budget_math.dart';
@@ -100,11 +102,22 @@ class _ListDetailScreenState extends ConsumerState<ListDetailScreen> {
 
     final list = listAsync.valueOrNull;
 
+    final hasOpenItems = itemsAsync.valueOrNull?.open.isNotEmpty ?? false;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(list?.name ?? ''),
         actions: [
+          if (hasOpenItems)
+            IconButton.filledTonal(
+              tooltip: 'Shop mode',
+              icon: const Icon(LucideIcons.shoppingCart, size: 19),
+              onPressed: () => context.pushNamed(
+                AppRoute.shopMode.name,
+                pathParameters: {'id': '${widget.listId}'},
+              ),
+            ),
           IconButton(
             tooltip: 'Sort',
             icon: const Icon(LucideIcons.arrowUpDown, size: 19),
