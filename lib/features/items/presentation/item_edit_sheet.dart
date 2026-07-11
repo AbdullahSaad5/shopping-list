@@ -342,6 +342,9 @@ class _ItemEditSheetState extends ConsumerState<ItemEditSheet> {
                             size: 15,
                             color: Color(category.color),
                           ),
+                          // The selected fill says it all — the checkmark
+                          // scrim over the avatar looked like a mud blob.
+                          showCheckmark: false,
                           label: Text(category.name),
                           selected: _categoryId == category.id,
                           onSelected: (_) =>
