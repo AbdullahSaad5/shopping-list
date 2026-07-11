@@ -18,6 +18,9 @@ Heads-up from ledgr (same machine, same stack):
 - `riverpod_generator` broke build_runner via a `custom_lint_core`/analyzer conflict → if it recurs, fall back to **classic Riverpod providers** (still Riverpod 2).
 - `file_picker` pin ^8.3.7 + root-Gradle compileSdk-36 subprojects override pattern lives in ledgr's `android/build.gradle.kts` if plugin AAR metadata checks bite.
 - Drift stream gotcha: never reuse identical `customSelect('SELECT 1', readsFrom: ...)` markers across repositories — drift caches streams **by SQL text** and later watchers silently never re-emit. Use `db.tableUpdates(TableUpdateQuery.onAllTables([...]))` for multi-table recompute streams.
+- **Modal sheets (learned twice — do not regress):** every `showModalBottomSheet` gets `useRootNavigator: true`, `useSafeArea: true`, `showDragHandle: true`, and content bottom-padding via `sheetBottomInset(context)` (core/widgets/sheet_insets.dart) or bottom actions clip behind 3-button navigation.
+- **Snackbars:** only via `showToast()` (core/widgets/toast.dart) — it replaces the current bar instead of queueing. Raw `ScaffoldMessenger.showSnackBar` calls stack up on rapid actions.
+- **Widget tests + Drift:** never `await` a stream's `.first` inside `testWidgets` (zero-duration timer + fake clock deadlocks) — wrap DB reads in `tester.runAsync`; pump a `SizedBox` before test end to flush the stream-close timer. Buttons that enable on controller changes need a `tester.pump()` between `enterText` and `tap`.
 
 ## Non-negotiable engineering rules
 
